@@ -13,7 +13,7 @@
 #include "parameters.h"
 #include "json.hpp"
 
-int main(int argc, const char * argv[]) {
+int main() {
 //  nlohmann::json json_in;
  // std::ifstream is("test.json");
  // is >> json_in;
