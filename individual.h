@@ -91,7 +91,7 @@ struct individual {
     }
 
     int cnt = 0;
-    for (int i = 1; i < data.size(); ++i) {
+    for (size_t i = 1; i < data.size(); ++i) {
       auto task1 = std::get<1>(data[i]);
       auto task2 = std::get<1>(data[i - 1]);
 
