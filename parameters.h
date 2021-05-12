@@ -18,6 +18,8 @@ struct meta_param {
 
   bool dominance_interaction = 1;
 
+  int model_type = 3; // 0 = no sharing, 1 = random sharing, 2 = dominance sharing, 3 = evolving dominance
+
   float threshold_mean = 5.0;
   float threshold_sd = 2.0;
 
@@ -78,6 +80,5 @@ private:
 // declare to_json / from_json pair for sim_param
 void to_json(nlohmann::json& j, const sim_param& p);
 void from_json(const nlohmann::json& j, sim_param& p);
-bool operator==(const sim_param& a, const sim_param& b);
 
 #endif /* parameters_h */

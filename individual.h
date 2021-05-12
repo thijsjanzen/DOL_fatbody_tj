@@ -71,8 +71,9 @@ struct individual {
     crop -= processed;
   }
 
-  void reduce_crop(float fraction) {
-    crop -= fraction * crop;
+  void reduce_crop(float amount) {
+    crop -= amount;
+    if (crop < 0.0) crop = 0.0;
   }
 
   void receive_food(float food, float conversion_rate) {
@@ -81,8 +82,43 @@ struct individual {
 
   void update_tasks(float t) {
     previous_t = t;
-    tasks.push_back( std::make_tuple(previous_t, current_task));
+    data.push_back( std::make_tuple(previous_t, current_task, fat_body));
   }
+
+  double calc_freq_switches() const {
+    if (data.size() <= 1) {
+      return 0.0;
+    }
+
+    int cnt = 0;
+    for (int i = 1; i < data.size(); ++i) {
+      auto task1 = std::get<1>(data[i]);
+      auto task2 = std::get<1>(data[i - 1]);
+
+
+      if (task1 != task2) {
+        cnt++;
+      }
+    }
+    double freq_switches = cnt * 1.0 / (data.size() - 1);
+
+    return freq_switches;
+  }
+
+  double count_p(size_t& num_switches) const {
+    if (data.size() <= 1) {
+      num_switches += 1;
+      return 0.0;
+    }
+
+    int cnt = 0;
+    for (const auto& i : data) {
+      if (std::get<1>(i) == 0) cnt++;
+      num_switches++;
+    }
+    return cnt;
+  }
+
 
   float get_fat_body() const {return fat_body;}
   float get_crop() const {return crop;}
@@ -90,7 +126,7 @@ struct individual {
   float get_next_t() const {return next_t;}
   task get_task() const {return current_task;}
   int get_id() const {return ID;}
-  const std::vector< std::tuple<float, task > >& get_tasks() const {return tasks;}
+  const std::vector< std::tuple<float, task, float > >& get_data() const {return data;}
 
   void set_fat_body(float fb) {fat_body = fb;}
   void set_crop(float c) {crop = c;}
@@ -109,7 +145,7 @@ private:
 
   std::vector<float> metabolic_rate;
   task current_task;
-  std::vector< std::tuple<float, task > > tasks;
+  std::vector< std::tuple<float, task, float > > data;
 };
 
 

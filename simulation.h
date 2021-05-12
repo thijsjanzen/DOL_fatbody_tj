@@ -51,12 +51,14 @@ struct Simulation {
     rndgen = rnd_t();
     rndgen.set_threshold_dist(p.get_meta_param().threshold_mean,
                               p.get_meta_param().threshold_sd);
+    t = 0.0;
 
     for (int i = 0; i < pop_size; ++i) {
       nurses.push_back(i);
       colony[i].set_params(p.get_ind_param(), i);
       colony[i].update_threshold(rndgen);
       time_queue.push( track_time(&colony[i]));
+      colony[i].update_tasks(t);
     }
   }
 
@@ -80,29 +82,32 @@ struct Simulation {
     focal_individual->set_crop(p.get_env_param().resource_amount);
     focal_individual->process_crop(p.get_ind_param().proportion_fat_body_forager);
 
-    // interactions
-    size_t num_interactions = std::max( static_cast<size_t>(p.get_meta_param().max_number_interactions),
-                                        static_cast<size_t>(nurses.size()));
+    if (p.get_meta_param().model_type > 0) {
 
-    for (size_t i = 0; i < num_interactions; ++i) {
-      int j = rndgen.random_number(nurses.size());
-      int tmp = nurses[j];
-      nurses[j] = nurses[i];
-      nurses[i] = tmp;
+      // interactions
+      size_t num_interactions = std::max( static_cast<size_t>(p.get_meta_param().max_number_interactions),
+                                          static_cast<size_t>(nurses.size()));
 
-      int index_other_individual = nurses[i];
+      for (size_t i = 0; i < num_interactions; ++i) {
+        int j = rndgen.random_number(nurses.size());
+        int tmp = nurses[j];
+        nurses[j] = nurses[i];
+        nurses[i] = tmp;
 
-      float share_amount = 0.f;
-      if (p.get_meta_param().dominance_interaction) {
-            share_amount = dominance_interaction(focal_individual->get_fat_body(),
-                                                 colony[index_other_individual].get_fat_body());
-      } else {
-        share_amount = rndgen.uniform();
+        int index_other_individual = nurses[i];
+
+        float share_amount = 0.f;
+        if (p.get_meta_param().model_type > 1) {
+              share_amount = dominance_interaction(focal_individual->get_fat_body(),
+                                                   colony[index_other_individual].get_fat_body());
+        } else {
+          share_amount = rndgen.uniform();
+        }
+
+        colony[ index_other_individual ].receive_food(share_amount * focal_individual->get_crop(),
+                                                      p.get_ind_param().proportion_fat_body_nurse);
+        focal_individual->reduce_crop(share_amount * focal_individual->get_crop());
       }
-
-      colony[ index_other_individual ].receive_food(share_amount * focal_individual->get_crop(),
-                                                    p.get_ind_param().proportion_fat_body_nurse);
-      focal_individual->reduce_crop(share_amount);
     }
 
     if (focal_individual->get_crop() > 0) {
@@ -155,7 +160,6 @@ struct Simulation {
   }
 
   void run_simulation() {
-    t = 0.0;
 
     while(t < p.get_meta_param().simulation_time) {
       auto focal_individual = time_queue.top().ind;
@@ -168,14 +172,66 @@ struct Simulation {
     }
   }
 
-  void write_to_file(std::string file_name) {
+  void write_ants_to_file(std::string file_name) {
     std::ofstream out(file_name.c_str());
+    int cnt = 0;
     for (const auto& i : colony) {
-      for (auto j : i.get_tasks()) {
-        out << std::get<0>(j) << " " << std::get<1>(j) << "\n";
+      for (auto j : i.get_data()) {
+        out << i.get_id() << " " << std::get<0>(j) << " " << std::get<1>(j) << " " << std::get<2>(j) << "\n"; // t, task, fat_body
       }
+      cnt++;
     }
+    out.close();
     return;
+  }
+
+  double calculate_gautrais() {
+    std::vector<double> f_values(colony.size());
+    int cnt = 0;
+    for (const auto& i : colony) {
+      double c = i.calc_freq_switches();
+
+      f_values[cnt] = 1 - 2 * c;
+      cnt++;
+    }
+    double avg_f = std::accumulate(f_values.begin(), f_values.end(), 0.0) *
+                   1.0 / f_values.size();
+    return avg_f;
+  }
+
+  double calculate_duarte() {
+    std::vector<double> q(colony.size());
+    std::vector<double> p(colony.size());
+    size_t cnt = 0;
+    size_t num_switches = 0;
+
+    for (const auto& i : colony) {
+      q[cnt] = 1 - i.calc_freq_switches();
+      p[cnt] = i.count_p(num_switches);
+      cnt++;
+    }
+    double q_bar = std::accumulate(q.begin(), q.end(), 0.0) *
+                    1.0 / q.size();
+    // now we need p1 ^ 2 and p2 ^ 2
+    double p1 = std::accumulate(p.begin(), p.end(), 0.0) *
+                      1.0 / num_switches;
+    double p2 = 1 - p1;
+    q_bar = q_bar / (p1 * p1 + p2 * p2);
+
+    double D =  q_bar - 1;
+    return D;
+  }
+
+
+  void write_dol_to_file(std::string file_name) {
+    std::ofstream out(file_name.c_str());
+    double gautrais = calculate_gautrais();
+    double duarte = calculate_duarte();
+    out << gautrais << " " << duarte << "\n";
+    std::cout << "DoL:\n";
+    std::cout << "Gautrais 2000: " << gautrais << "\n";
+    std::cout << "Duarte 2012  : " << duarte   << "\n";
+    out.close();
   }
 
 };
