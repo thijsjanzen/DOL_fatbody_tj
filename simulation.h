@@ -44,16 +44,20 @@ struct Simulation {
   rnd_t rndgen;
 
   float t;
-
   sim_param p;
 
-  Simulation(int pop_size, const sim_param& par) : colony(pop_size), p(par) {
+  Simulation(const sim_param& par) : p(par) {
     rndgen = rnd_t();
     rndgen.set_threshold_dist(p.get_meta_param().threshold_mean,
                               p.get_meta_param().threshold_sd);
+
+    colony = std::vector< individual >(p.get_meta_param().colony_size);
+
+    
+
     t = 0.0;
 
-    for (int i = 0; i < pop_size; ++i) {
+    for (int i = 0; i < p.get_meta_param().colony_size; ++i) {
       nurses.push_back(i);
       colony[i].set_params(p.get_ind_param(), i);
       colony[i].update_threshold(rndgen);

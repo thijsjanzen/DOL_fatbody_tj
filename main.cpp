@@ -14,35 +14,19 @@
 #include "json.hpp"
 
 int main() {
-
- /* sim_param sim_par_in2; // use default values;
-  nlohmann::json json_out;
-  json_out = sim_par_in2;
-  std::ofstream os("test2.json");
-  os << json_out;
-  os.close();
-
-  nlohmann::json json_in;
-  std::ifstream is("test.json");
-  is >> json_in;
-  sim_param sim_par_in = json_in.get<sim_param>();
-*/
   try {
-        sim_param sim_par_in; // use default values;
-     //   nlohmann::json json_out;
-     //   json_out = sim_par_in;
-     //   std::ofstream os("test.json");
-     //   os << json_out;
+    nlohmann::json json_in;
+    std::ifstream is("test.json");
+    is >> json_in;
+    sim_param sim_par_in = json_in.get<sim_param>();
+    Simulation sim(sim_par_in);
 
-        Simulation sim(sim_par_in.get_meta_param().colony_size,
-                       sim_par_in);
+    sim.run_simulation();
 
-        sim.run_simulation();
+    sim.write_ants_to_file("test.txt");
+    sim.write_dol_to_file("dol.txt");
 
-        sim.write_ants_to_file("test.txt");
-        sim.write_dol_to_file("dol.txt");
-
-        return 0;
+    return 0;
   }
   catch (const std::exception& err) {
     std::cerr << err.what() << '\n';

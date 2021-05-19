@@ -27,8 +27,8 @@ struct meta_param {
 };
 
 struct ind_param {
-  float metabolic_cost_nurses = 1.0;
-  float metabolic_cost_foragers = 1.0;
+  float metabolic_cost_nurses = 0.5;
+  float metabolic_cost_foragers = 0.5;
   double min_fat_body = 8.0; // new individuals have a fat body that has at least this size
   double max_fat_body = 12.0; // new individuals have a fat body that has this size at maximum
   double min_for_abi = 1.0; // minimal foraging ability for new individuals
@@ -42,11 +42,9 @@ struct ind_param {
 };
 
 struct env_param {
-  float resource_amount = 5.0;
+  float resource_amount = 1.0;
   float foraging_time = 5.0;
 };
-
-
 
 
 class sim_param
