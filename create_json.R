@@ -28,6 +28,8 @@ meta_param <- data.frame(
   threshold_sd = 2.0,
 
   max_number_interactions = 3
+
+  model_type = 0 # 0 = no sharing, 1 = random sharing, 2 = dominance sharing, 3 = evolving dominance
 )
 
 sim_param <- list("env_param" = env_param,
