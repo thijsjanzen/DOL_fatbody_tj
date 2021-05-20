@@ -27,9 +27,13 @@ meta_param <- data.frame(
   threshold_mean = 5.0,
   threshold_sd = 2.0,
 
-  max_number_interactions = 3
+  max_number_interactions = 3,
 
-  model_type = 0 # 0 = no sharing, 1 = random sharing, 2 = dominance sharing, 3 = evolving dominance
+  model_type = 0,       # 0 = no sharing, 1 = random sharing,
+                       # 2 = dominance sharing, 3 = evolving dominance
+
+  dol_file_name = "dol.txt",
+  output_file_name = "output.txt"
 )
 
 sim_param <- list("env_param" = env_param,

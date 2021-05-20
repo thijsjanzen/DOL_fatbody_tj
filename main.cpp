@@ -23,8 +23,8 @@ int main() {
 
     sim.run_simulation();
 
-    sim.write_ants_to_file("test.txt");
-    sim.write_dol_to_file("dol.txt");
+    sim.write_ants_to_file(sim_par_in.get_meta_param().output_file_name);
+    sim.write_dol_to_file(sim_par_in.get_meta_param().dol_file_name);
 
     return 0;
   }
