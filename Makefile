@@ -1,4 +1,4 @@
-CFLAGS = -Wall -Werror -Wextra -std=c++17 -ffast-math -march=native -O3
+CFLAGS = -Wall -Werror -Wextra -std=c++17 -ffast-math -O3
 SRC = main.cpp simulation.cpp parameters.cpp
 
 all: 
