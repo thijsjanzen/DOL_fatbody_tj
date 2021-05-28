@@ -226,15 +226,74 @@ struct Simulation {
     return D;
   }
 
+  double calculate_gorelick() {
+    // HARDCODED 2 TASKS !!!
+    std::vector<std::vector<double>> m(colony.size(), std::vector<double>(2, 0));
+    // calculate frequency per individual per task
+    auto sum = 0.0;
+    for (int i = 0; i < colony.size(); ++i) {
+      m[i] = colony[i].calculate_task_frequency(p.get_meta_param().simulation_time);
+      sum += m[i][0] + m[i][1];
+    }
 
-  void write_dol_to_file(std::string file_name) {
+    auto mult = 1.0 / sum;
+
+    std::vector<double> pTask(2, 0.0);
+    std::vector<double> pInd(m.size(), 0.0);
+
+    for(int i = 0; i < m.size(); ++i) {
+      for (int j = 0; j < 2; ++j) {
+        m[i][j] *= mult; // normalize
+
+        pTask[j] += m[i][j];
+        pInd[i] += m[i][j];
+      }
+    }
+
+    // calculate Hx, marginal entropy
+     double Hx = 0;
+     for (int i = 0; i < pTask.size(); ++i) {
+       if (pTask[i] != 0.0) {
+           Hx += pTask[i] * log(pTask[i]);
+       }
+     }
+
+     Hx *= -1;
+
+     // calculate Ixy, mutual entropy
+     double Ixy = 0;
+     for (int i = 0; i < m[0].size(); ++i) {
+       for (int j = 0; j < m.size(); ++j) {
+
+         auto x = m[j][i];
+         if (x != 0) {
+          Ixy += x * log(x / (pTask[i] * pInd[j]));
+         }
+       }
+     }
+    double result = Ixy / Hx;
+    return result;
+  }
+
+
+  void write_dol_to_file(const std::vector<double>& params,
+                         std::string file_name) {
     std::ofstream out(file_name.c_str());
+
+    for (auto i : params) {
+      out << i << " ";
+      std::cout << i << " ";
+    }
+
     double gautrais = calculate_gautrais();
     double duarte = calculate_duarte();
-    out << gautrais << " " << duarte << "\n";
+    double gorelick = calculate_gorelick();
+
+    out << gautrais << " " << duarte << " " << gorelick << "\n";
     std::cout << "DoL:\n";
     std::cout << "Gautrais 2000: " << gautrais << "\n";
     std::cout << "Duarte 2012  : " << duarte   << "\n";
+    std::cout << "Gorelick 2004: " << gorelick << "\n";
     out.close();
   }
 

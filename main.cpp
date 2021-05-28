@@ -13,10 +13,17 @@
 #include "parameters.h"
 #include "json.hpp"
 
-int main() {
+int main(int argc, char* argv[]) {
   try {
+    if (argc < 1) { // needs run name
+             std::cerr << "Usage: " << argv[0] << "parameter name" << std::endl;
+             return 1;
+    }
+
+    auto file_name = argv[1];
+
     nlohmann::json json_in;
-    std::ifstream is("test.json");
+    std::ifstream is(file_name);
     is >> json_in;
     sim_param sim_par_in = json_in.get<sim_param>();
     Simulation sim(sim_par_in);
@@ -24,7 +31,14 @@ int main() {
     sim.run_simulation();
 
     sim.write_ants_to_file(sim_par_in.get_meta_param().output_file_name);
-    sim.write_dol_to_file(sim_par_in.get_meta_param().dol_file_name);
+
+    // the vector params_of_interest can be modified to contain anything you are varying
+    // it is then subsequently added to the output file in front of the DoL measures.
+    std::vector< double > params_of_interest = {sim_par_in.get_env_param().foraging_time,
+      sim_par_in.get_env_param().resource_amount};
+
+    sim.write_dol_to_file(params_of_interest,
+                          sim_par_in.get_meta_param().dol_file_name);
 
     return 0;
   }

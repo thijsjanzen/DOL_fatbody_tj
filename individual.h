@@ -82,7 +82,7 @@ struct individual {
 
   void update_tasks(float t) {
     previous_t = t;
-    data.push_back( std::make_tuple(previous_t, current_task, fat_body));
+    data.push_back( std::make_tuple(t, current_task, fat_body));
   }
 
   double calc_freq_switches() const {
@@ -119,6 +119,21 @@ struct individual {
     return cnt;
   }
 
+  std::vector<double> calculate_task_frequency(double total_runtime) {
+    std::vector<double> task_freq(2, 0.0);
+    for (int i = 0; i < data.size(); ++i) {
+      float start_t = std::get<0>(data[i]);
+      float end_t = total_runtime;
+      if (i + 1 < data.size()) {
+        end_t = std::get<0>(data[i + 1]);
+      }
+      
+      double dt = end_t - start_t;
+      task_freq[ std::get<1>(data[i]) ] += dt;
+    }
+    return task_freq;
+  }
+
 
   float get_fat_body() const {return fat_body;}
   float get_crop() const {return crop;}
@@ -132,6 +147,8 @@ struct individual {
   void set_crop(float c) {crop = c;}
   void set_previous_t(float t) {previous_t = t;}
   void set_current_task(task new_task) {current_task = new_task;}
+
+
 
 private:
   float fat_body;
