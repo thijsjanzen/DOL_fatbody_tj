@@ -231,7 +231,7 @@ struct Simulation {
     std::vector<std::vector<double>> m(colony.size(), std::vector<double>(2, 0));
     // calculate frequency per individual per task
     auto sum = 0.0;
-    for (int i = 0; i < colony.size(); ++i) {
+    for (size_t i = 0; i < colony.size(); ++i) {
       m[i] = colony[i].calculate_task_frequency(p.get_meta_param().simulation_time);
       sum += m[i][0] + m[i][1];
     }
@@ -241,8 +241,8 @@ struct Simulation {
     std::vector<double> pTask(2, 0.0);
     std::vector<double> pInd(m.size(), 0.0);
 
-    for(int i = 0; i < m.size(); ++i) {
-      for (int j = 0; j < 2; ++j) {
+    for(size_t i = 0; i < m.size(); ++i) {
+      for (size_t j = 0; j < 2; ++j) {
         m[i][j] *= mult; // normalize
 
         pTask[j] += m[i][j];
@@ -252,7 +252,7 @@ struct Simulation {
 
     // calculate Hx, marginal entropy
      double Hx = 0;
-     for (int i = 0; i < pTask.size(); ++i) {
+     for (size_t i = 0; i < pTask.size(); ++i) {
        if (pTask[i] != 0.0) {
            Hx += pTask[i] * log(pTask[i]);
        }
@@ -262,8 +262,8 @@ struct Simulation {
 
      // calculate Ixy, mutual entropy
      double Ixy = 0;
-     for (int i = 0; i < m[0].size(); ++i) {
-       for (int j = 0; j < m.size(); ++j) {
+     for (size_t i = 0; i < m[0].size(); ++i) {
+       for (size_t j = 0; j < m.size(); ++j) {
 
          auto x = m[j][i];
          if (x != 0) {

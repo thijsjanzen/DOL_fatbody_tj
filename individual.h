@@ -121,7 +121,8 @@ struct individual {
 
   std::vector<double> calculate_task_frequency(double total_runtime) {
     std::vector<double> task_freq(2, 0.0);
-    for (int i = 0; i < data.size(); ++i) {
+
+    for (size_t i = 0; i < data.size(); ++i) {
       float start_t = std::get<0>(data[i]);
       float end_t = total_runtime;
       if (i + 1 < data.size()) {
