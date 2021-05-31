@@ -13,8 +13,8 @@
 
 struct meta_param {
 
-  std::string dol_file_name = "dol.txt";
-  std::string output_file_name = "output.txt";
+  std::string dol_file_name = "dol_default.txt";
+  std::string output_file_name = "output_default.txt";
 
   int simulation_time = 10000; // length of simulation
   int data_interval = 1; // data is written simulationTime / dataInterval times

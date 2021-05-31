@@ -172,12 +172,15 @@ struct Simulation {
       update_individual(focal_individual);
       // re-add individual to queue
       time_queue.push(track_time(focal_individual));
-      std::cout << t << " " << nurses.size() << "\n";
+      std::cout << t << " " << nurses.size() << " " << colony.size() - nurses.size() <<   "\n";
     }
   }
 
   void write_ants_to_file(std::string file_name) {
     std::ofstream out(file_name.c_str());
+
+    std::cout << "writing output to: " << file_name << "\n";
+
     int cnt = 0;
     for (const auto& i : colony) {
       for (auto j : i.get_data()) {
@@ -277,7 +280,10 @@ struct Simulation {
 
 
   void write_dol_to_file(const std::vector<double>& params,
-                         std::string file_name) {
+                       std::string file_name) {
+
+    std::cout << "writing dol to: " << file_name << "\n";
+
     std::ofstream out(file_name.c_str());
 
     for (auto i : params) {

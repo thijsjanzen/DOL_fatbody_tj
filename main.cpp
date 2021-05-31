@@ -24,6 +24,12 @@ int main(int argc, char* argv[]) {
 
     nlohmann::json json_in;
     std::ifstream is(file_name);
+
+    if(!is.is_open()) {
+      std::cerr << "Can not open JSON file\n";
+      return 1;
+    }
+
     is >> json_in;
     sim_param sim_par_in = json_in.get<sim_param>();
     Simulation sim(sim_par_in);
@@ -38,7 +44,7 @@ int main(int argc, char* argv[]) {
       sim_par_in.get_env_param().resource_amount};
 
     sim.write_dol_to_file(params_of_interest,
-                          sim_par_in.get_meta_param().dol_file_name);
+                         sim_par_in.get_meta_param().dol_file_name);
 
     return 0;
   }
