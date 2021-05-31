@@ -172,7 +172,7 @@ struct Simulation {
       update_individual(focal_individual);
       // re-add individual to queue
       time_queue.push(track_time(focal_individual));
-      std::cout << t << " " << nurses.size() << " " << colony.size() - nurses.size() <<   "\n";
+   //   std::cout << t << " " << nurses.size() << " " << colony.size() - nurses.size() <<   "\n";
     }
   }
 

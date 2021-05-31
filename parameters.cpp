@@ -9,16 +9,32 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(env_param,
 )
 
 
-// define to_json / from_json pair for meta_param
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(meta_param,
-  simulation_time,
-  data_interval,
-  colony_size,
-  dominance_interaction,
-  threshold_mean,
-  threshold_sd,
-  max_number_interactions
-)
+void to_json(nlohmann::json& j, const meta_param& t)
+{
+  NLOHMANN_JSON_TO(simulation_time);
+  NLOHMANN_JSON_TO(data_interval);
+  NLOHMANN_JSON_TO(colony_size);
+  NLOHMANN_JSON_TO(dominance_interaction);
+  NLOHMANN_JSON_TO(threshold_mean);
+  NLOHMANN_JSON_TO(threshold_sd);
+  NLOHMANN_JSON_TO(max_number_interactions);
+  NLOHMANN_JSON_TO(dol_file_name);
+  NLOHMANN_JSON_TO(output_file_name);
+}
+
+void from_json(const nlohmann::json& j, meta_param& t)
+{
+  NLOHMANN_JSON_FROM(simulation_time);
+  NLOHMANN_JSON_FROM(data_interval);
+  NLOHMANN_JSON_FROM(colony_size);
+  NLOHMANN_JSON_FROM(dominance_interaction);
+  NLOHMANN_JSON_FROM(threshold_mean);
+  NLOHMANN_JSON_FROM(threshold_sd);
+  NLOHMANN_JSON_FROM(max_number_interactions);
+  NLOHMANN_JSON_FROM(dol_file_name);
+  NLOHMANN_JSON_FROM(output_file_name);
+}
+
 
 // define to_json / from_json pair for ind_param
 // we can't use the fancy NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE macro
