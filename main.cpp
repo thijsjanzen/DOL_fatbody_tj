@@ -38,7 +38,9 @@ int main(int argc, char* argv[]) {
 
     sim.run_simulation();
 
-    sim.write_ants_to_file(sim_par_in.get_meta_param().output_file_name);
+    if (sim_par_in.get_meta_param().data_interval != -1) {
+      sim.write_ants_to_file(sim_par_in.get_meta_param().output_file_name);
+    }
 
     // the vector params_of_interest can be modified to contain anything you are varying
     // it is then subsequently added to the output file in front of the DoL measures.
