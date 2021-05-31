@@ -67,7 +67,7 @@ struct Simulation {
   }
 
   bool check_time_interval(float t, int time_interval) {
-     if (time_interval < 0) {
+     if (time_interval <= 0) {
        return false;
      }
 
