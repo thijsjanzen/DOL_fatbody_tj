@@ -22,6 +22,8 @@ int main(int argc, char* argv[]) {
 
     auto file_name = argv[1];
 
+    std::cout << "reading from JSON file: " << file_name << "\n";
+
     nlohmann::json json_in;
     std::ifstream is(file_name);
 
