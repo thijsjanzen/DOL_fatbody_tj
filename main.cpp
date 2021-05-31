@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
 
     sim.run_simulation();
 
-    if (sim_par_in.get_meta_param().data_interval != -1) {
+    if (sim_par_in.get_meta_param().data_interval == 0) {
       sim.write_ants_to_file(sim_par_in.get_meta_param().output_file_name);
     }
 

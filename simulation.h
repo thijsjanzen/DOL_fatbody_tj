@@ -45,6 +45,7 @@ struct Simulation {
 
   float t;
   sim_param p;
+  int previous_time_recording;
 
   Simulation(const sim_param& par) : p(par) {
     rndgen = rnd_t();
@@ -53,9 +54,8 @@ struct Simulation {
 
     colony = std::vector< individual >(p.get_meta_param().colony_size);
 
-    
-
     t = 0.0;
+    previous_time_recording = -1;
 
     for (int i = 0; i < p.get_meta_param().colony_size; ++i) {
       nurses.push_back(i);
@@ -65,6 +65,47 @@ struct Simulation {
       colony[i].update_tasks(t);
     }
   }
+
+  bool check_time_interval(float t, int time_interval) {
+     if (time_interval < 0) {
+       return false;
+     }
+
+     int floored_time = static_cast<int>(t);
+     if (floored_time % time_interval == 0) {
+       return true;
+     }
+     return false;
+   }
+
+   void write_intermediate_output_to_file(std::string file_name,
+                                       int t) {
+     if (t == previous_time_recording) {
+       return;
+     }
+
+     if (previous_time_recording == -1) { // first time writing to file
+       std::ofstream out_file2(file_name.c_str());
+       out_file2 << "time" << "\t"
+                << "id" << "\t"
+                << "task" << "\t"
+                << "fat_body" << "\t"
+                << "crop" << "\n";
+       out_file2.close();
+     }
+
+     previous_time_recording = t;
+
+     std::ofstream out_file(file_name.c_str(), std::ios::app);
+     for (const auto& i : colony) {
+       out_file << t << "\t"
+                << i.get_id() << "\t"
+                << i.get_task() << "\t"
+                << i.get_fat_body() << "\t"
+                << i.get_crop() << "\n";
+     }
+     out_file.close();
+   }
 
   void remove_from_nurses(int id) {
     for (auto& i : nurses) {
@@ -169,6 +210,12 @@ struct Simulation {
       auto focal_individual = time_queue.top().ind;
       time_queue.pop();
       t = focal_individual->get_next_t();
+
+      if (check_time_interval(t, p.get_meta_param().data_interval)) {
+         write_intermediate_output_to_file(p.get_meta_param().output_file_name,
+                                           t);
+      }
+
       update_individual(focal_individual);
       // re-add individual to queue
       time_queue.push(track_time(focal_individual));
@@ -279,7 +326,7 @@ struct Simulation {
 
 
   void write_dol_to_file(const std::vector<double>& params,
-                       std::string file_name) {
+                         const std::string& file_name) {
 
     std::cout << "writing dol to: " << file_name << "\n";
 
@@ -301,6 +348,8 @@ struct Simulation {
     std::cout << "Gorelick 2004: " << gorelick << "\n";
     out.close();
   }
+
+
 
 };
 
