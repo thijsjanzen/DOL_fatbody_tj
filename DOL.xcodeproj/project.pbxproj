@@ -6,10 +6,6 @@
 	objectVersion = 50;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		65F445412664D65A00C0DAE8 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 65F445402664D65A00C0DAE8 /* main.cpp */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXCopyFilesBuildPhase section */
 		65F4453B2664D65A00C0DAE8 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -23,8 +19,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		65F4453D2664D65A00C0DAE8 /* DOL */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = DOL; sourceTree = BUILT_PRODUCTS_DIR; };
-		65F445402664D65A00C0DAE8 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		65F4453D2664D65A00C0DAE8 /* DOL */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = DOL; path = /Users/daniel/Desktop/DOL/build/Debug/DOL; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -41,25 +36,7 @@
 		65F445342664D65A00C0DAE8 = {
 			isa = PBXGroup;
 			children = (
-				65F4453F2664D65A00C0DAE8 /* DOL */,
-				65F4453E2664D65A00C0DAE8 /* Products */,
 			);
-			sourceTree = "<group>";
-		};
-		65F4453E2664D65A00C0DAE8 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				65F4453D2664D65A00C0DAE8 /* DOL */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		65F4453F2664D65A00C0DAE8 /* DOL */ = {
-			isa = PBXGroup;
-			children = (
-				65F445402664D65A00C0DAE8 /* main.cpp */,
-			);
-			path = DOL;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -104,7 +81,7 @@
 				Base,
 			);
 			mainGroup = 65F445342664D65A00C0DAE8;
-			productRefGroup = 65F4453E2664D65A00C0DAE8 /* Products */;
+			productRefGroup = 65F445342664D65A00C0DAE8;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -118,7 +95,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				65F445412664D65A00C0DAE8 /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
