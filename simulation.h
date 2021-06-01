@@ -188,21 +188,15 @@ struct Simulation {
         focal_individual->set_next_t_forager(p.get_env_param().foraging_time);
       }
       focal_individual->update_tasks(t);
-      return;
-    }
-
-    if (focal_individual->get_task() == nurse) {
-      // focal individual was nursing, and starts foraging
+    } else { // focal individual was nursing, and starts foraging
       // (note that the threshold has been reached, otherwise
       // it would've already been checked above.
       remove_from_nurses(focal_individual->get_id());
 
       focal_individual->set_next_t_forager(p.get_env_param().foraging_time);
       focal_individual->set_current_task(forage);
-
-      focal_individual->update_tasks(t);
-      return;
     }
+     focal_individual->update_tasks(t);
   }
 
   void run_simulation() {
@@ -220,6 +214,7 @@ struct Simulation {
       update_individual(focal_individual);
       // re-add individual to queue
       time_queue.push(track_time(focal_individual));
+      std::cout << t << "\n";
     }
   }
 

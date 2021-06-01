@@ -43,7 +43,9 @@ struct individual {
   }
 
   void set_next_t_nurse() {
-    next_t = previous_t + (fat_body - threshold) / metabolic_rate[ current_task];
+    if ((fat_body - threshold) > 0) {
+      next_t = previous_t + (fat_body - threshold) / metabolic_rate[ current_task];
+    }
   }
 
   void set_next_t_forager(float foraging_time) {
@@ -51,7 +53,7 @@ struct individual {
   }
 
   bool not_at_threshold() {
-    if (fat_body - threshold > 1e-3) return true;
+    if (fat_body - threshold > 1e-2f) return true;
     return false;
   }
 
