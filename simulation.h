@@ -11,6 +11,7 @@
 
 #include <vector>
 #include <queue>
+#include <tuple>
 
 #include "individual.h"
 #include "parameters.h"
@@ -227,6 +228,8 @@ struct Simulation {
 
     std::cout << "writing output to: " << file_name << "\n";
 
+    out << "ID" << "\t" << "time" << "\t" << "task" << "\t" << "fat_body" << "\n";
+
     int cnt = 0;
     for (const auto& i : colony) {
       for (auto j : i.get_data()) {
@@ -275,7 +278,7 @@ struct Simulation {
     return D;
   }
 
-  double calculate_gorelick() {
+  std::tuple<double, double, double> calculate_gorelick() {
     // HARDCODED 2 TASKS !!!
     std::vector<std::vector<double>> m(colony.size(), std::vector<double>(2, 0));
     // calculate frequency per individual per task
@@ -309,19 +312,31 @@ struct Simulation {
 
      Hx *= -1;
 
-     // calculate Ixy, mutual entropy
-     double Ixy = 0;
-     for (size_t i = 0; i < m[0].size(); ++i) {
-       for (size_t j = 0; j < m.size(); ++j) {
+    // Calculate marginal entropy for individuals
+    double Hy = 0.0;
+    for (int i = 0; i < pInd.size(); ++i) {
+           if (pInd[i] > 0) {
+               Hy += pInd[i] * log(pInd[i]); // Again, this is Shannon's equation, but not yet mulpiplied by -1...
+           }
+    }
+    Hy *= -1; // ...and here, again, multiplied by -1
 
-         auto x = m[j][i];
-         if (x != 0) {
-          Ixy += x * log(x / (pTask[i] * pInd[j]));
-         }
+   // calculate Ixy, mutual entropy
+   double Ixy = 0;
+   for (size_t i = 0; i < m[0].size(); ++i) {
+     for (size_t j = 0; j < m.size(); ++j) {
+
+       auto x = m[j][i];
+       if (x != 0) {
+        Ixy += x * log(x / (pTask[i] * pInd[j]));
        }
      }
-    double result = Ixy / Hx;
-    return result;
+   }
+
+    double div_into_tasks = Ixy / Hx;
+    double div_across_indivs = Ixy / Hy;
+    double sim_div = Ixy / (sqrt(Hx * Hy));
+    return std::make_tuple(div_into_tasks, div_across_indivs, sim_div);
   }
 
 
@@ -339,13 +354,28 @@ struct Simulation {
 
     double gautrais = calculate_gautrais();
     double duarte = calculate_duarte();
-    double gorelick = calculate_gorelick();
+    auto gorelick_stats = calculate_gorelick();
 
-    out << gautrais << " " << duarte << " " << gorelick << "\n";
     std::cout << "DoL:\n";
     std::cout << "Gautrais 2000: " << gautrais << "\n";
     std::cout << "Duarte 2012  : " << duarte   << "\n";
-    std::cout << "Gorelick 2004: " << gorelick << "\n";
+    std::cout << "Gorelick 2004: ";
+
+    out << gautrais << " " << duarte << " ";
+
+
+    double div_tasks = std::get<0>(gorelick_stats);
+    std::cout << div_tasks << " ";
+    out << div_tasks << " ";
+
+    double div_indiv = std::get<1>(gorelick_stats);
+    std::cout << div_indiv << " ";
+    out << div_indiv << " ";
+
+    double div_both = std::get<2>(gorelick_stats);
+    std::cout << div_both << "\n";
+    out << div_both << "\n";
+
     out.close();
   }
 
