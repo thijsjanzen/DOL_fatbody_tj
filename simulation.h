@@ -314,7 +314,7 @@ struct Simulation {
 
     // Calculate marginal entropy for individuals
     double Hy = 0.0;
-    for (int i = 0; i < pInd.size(); ++i) {
+    for (size_t i = 0; i < pInd.size(); ++i) {
            if (pInd[i] > 0) {
                Hy += pInd[i] * log(pInd[i]); // Again, this is Shannon's equation, but not yet mulpiplied by -1...
            }
