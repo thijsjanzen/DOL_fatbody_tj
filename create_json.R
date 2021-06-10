@@ -1,8 +1,8 @@
 create_json <- function(json_file_name = "test.json",
                         resource_amount = 5.0,
                         foraging_time = 5.0,
-                        metabolic_cost_nurses = 1.0,
-                        metabolic_cost_foragers = 1.0,
+                        metabolic_cost_nurses = 0.2,
+                        metabolic_cost_foragers = 0.2,
                         min_fat_body = 8.0,
                         max_fat_body = 12.0,
                         min_for_abi = 1.0,
@@ -14,17 +14,17 @@ create_json <- function(json_file_name = "test.json",
                         proportion_fat_body_forager = 0.2,
                         proportion_fat_body_nurse   = 0.2,
                         simulation_time = 10000,
-                        data_interval = 1.0,
+                        data_interval = 100.0,
                         colony_size = 100,
 
-                        dominance_interaction = TRUE,
-
-                        threshold_mean = 5.0,
-                        threshold_sd = 2.0,
+                        dt = 0.01,
+                        half_point = 5,
+                        mean_dominance = 5,
+                        sd_dominance = 2,
 
                         max_number_interactions = 3,
 
-                        model_type = 0,       # 0 = no sharing, 1 = random sharing,
+                        model_type = 3,       # 0 = no sharing, 1 = random sharing,
                         # 2 = dominance sharing, 3 = evolving dominance
 
                         dol_file_name = "dol.txt",
@@ -47,7 +47,10 @@ create_json <- function(json_file_name = "test.json",
     min_share = min_share,
     max_share = max_share,
     proportion_fat_body_forager = proportion_fat_body_forager,
-    proportion_fat_body_nurse   = proportion_fat_body_nurse
+    proportion_fat_body_nurse   = proportion_fat_body_nurse,
+    mean_dominance = mean_dominance,
+    sd_dominance = sd_dominance,
+    half_point = half_point
   )
 
   meta_param <- data.frame(
@@ -55,18 +58,14 @@ create_json <- function(json_file_name = "test.json",
     data_interval = data_interval,
     colony_size = colony_size,
 
-    dominance_interaction = dominance_interaction,
-
-    threshold_mean = threshold_mean,
-    threshold_sd = threshold_sd,
-
     max_number_interactions = max_number_interactions,
 
     model_type = model_type,       # 0 = no sharing, 1 = random sharing,
     # 2 = dominance sharing, 3 = evolving dominance
 
     dol_file_name = dol_file_name,
-    output_file_name = output_file_name
+    output_file_name = output_file_name,
+    dt = dt
   )
 
   sim_param <- list("env_param" = env_param,

@@ -20,12 +20,10 @@ struct meta_param {
   int data_interval = 1; // data is written simulationTime / dataInterval times
   int colony_size = 100; // number of individuals per colony
 
-  bool dominance_interaction = 1;
-
   int model_type = 3; // 0 = no sharing, 1 = random sharing, 2 = dominance sharing, 3 = evolving dominance
 
-  float threshold_mean = 5.0;
-  float threshold_sd = 2.0;
+  float dt = 0.01;
+
 
   int max_number_interactions = 3; // max number of interactions with nurses at foraging return
 };
@@ -43,6 +41,9 @@ struct ind_param {
   double max_share = 1.0;
   float proportion_fat_body_forager = 0.2; // proportion of resources allocated to the fatbody by foragers
   float proportion_fat_body_nurse   = 0.2;  // proportion of resources allocated to the fatbody by nurses
+  float mean_dominance = 5.0;
+  float sd_dominance = 2.0;
+  float half_point = 5;
 };
 
 struct env_param {

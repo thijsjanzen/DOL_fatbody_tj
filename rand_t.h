@@ -52,6 +52,11 @@ struct rnd_t {
     return std::poisson_distribution<int>(lambda)(rndgen);
   }
 
+  double normal(double m, double s) {
+    std::normal_distribution<double> norm_dist(m, s);
+    return norm_dist(rndgen);
+  }
+
   double normal_positive(double m, double s) {
     std::normal_distribution<double> norm_dist(m, s);
     double  output = norm_dist(rndgen);

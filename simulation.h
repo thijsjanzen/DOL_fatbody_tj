@@ -45,24 +45,24 @@ struct Simulation {
   rnd_t rndgen;
 
   float t;
+  float dt;
   sim_param p;
   int previous_time_recording;
 
+
+
   Simulation(const sim_param& par) : p(par) {
     rndgen = rnd_t();
-    rndgen.set_threshold_dist(p.get_meta_param().threshold_mean,
-                              p.get_meta_param().threshold_sd);
-
     colony = std::vector< individual >(p.get_meta_param().colony_size);
 
     t = 0.0;
+    dt = p.get_meta_param().dt;
     previous_time_recording = -1;
 
     for (int i = 0; i < p.get_meta_param().colony_size; ++i) {
       nurses.push_back(i);
-      colony[i].set_params(p.get_ind_param(), i);
-      colony[i].update_threshold(rndgen);
-      time_queue.push( track_time(&colony[i]));
+      colony[i].set_params(p.get_ind_param(), i, rndgen);
+      colony[i].set_current_task(nurse);
       colony[i].update_tasks(t);
     }
   }
@@ -124,18 +124,19 @@ struct Simulation {
     return 1.f / (1.f + expf(fb_self - fb_other));
   }
 
-  void update_forager(individual* focal_individual) {
+  bool update_forager(individual* focal_individual) {
+    focal_individual->update_fatbody(t);
+
     focal_individual->set_crop(p.get_env_param().resource_amount);
     focal_individual->process_crop(p.get_ind_param().proportion_fat_body_forager);
 
     if (p.get_meta_param().model_type > 0) {
-
-      // interactions
-      size_t num_interactions = std::max( static_cast<size_t>(p.get_meta_param().max_number_interactions),
+      // in model 0, there is NO sharing
+      size_t num_interactions = std::min( static_cast<size_t>(p.get_meta_param().max_number_interactions),
                                           static_cast<size_t>(nurses.size()));
 
       for (size_t i = 0; i < num_interactions; ++i) {
-        int j = rndgen.random_number(nurses.size());
+        int j = rndgen.random_number(nurses.size() - i);
         int tmp = nurses[j];
         nurses[j] = nurses[i];
         nurses[i] = tmp;
@@ -143,78 +144,102 @@ struct Simulation {
         int index_other_individual = nurses[i];
 
         float share_amount = 0.f;
-        if (p.get_meta_param().model_type > 1) {
-              share_amount = dominance_interaction(focal_individual->get_fat_body(),
-                                                   colony[index_other_individual].get_fat_body());
-        } else {
+        if (p.get_meta_param().model_type == 1) {
           share_amount = rndgen.uniform();
         }
+        if (p.get_meta_param().model_type == 2) {
+          share_amount = dominance_interaction(focal_individual->get_dominance(),
+                                               colony[index_other_individual].get_dominance());
+        }
+        if (p.get_meta_param().model_type == 3) {
+          share_amount = dominance_interaction(focal_individual->get_fat_body(),
+                                               colony[index_other_individual].get_fat_body());
+        }
 
-        colony[ index_other_individual ].receive_food(share_amount * focal_individual->get_crop(),
-                                                      p.get_ind_param().proportion_fat_body_nurse);
-        focal_individual->reduce_crop(share_amount * focal_individual->get_crop());
+        float to_share = share_amount * focal_individual->get_crop();
+        colony[ index_other_individual ].receive_food(to_share,
+                                                      p.get_ind_param().proportion_fat_body_nurse,
+                                                      p.get_ind_param().max_fat_body);
+
+        float shared = share_amount * focal_individual->get_crop() - to_share;
+        focal_individual->reduce_crop(shared);
       }
     }
+    // the remainder in the crop is digested
+    float receive = focal_individual->get_crop();
+    focal_individual->receive_food(receive,
+                                  p.get_ind_param().proportion_fat_body_forager,
+                                  p.get_ind_param().max_fat_body);
+    focal_individual->set_crop(0.0);
 
-    if (focal_individual->get_crop() > 0) {
-      focal_individual->receive_food(focal_individual->get_crop(),
-                                     p.get_ind_param().proportion_fat_body_forager);
-      focal_individual->set_crop(0.0); // just to be sure.
-    }
+    // now we need to decide if we go foraging
+    float prob = focal_individual->forage_prob(dt);
+    return rndgen.bernouilli(prob);
   }
 
-
-  void update_individual(individual* focal_individual) {
-    focal_individual->update_fatbody(t);
-
-    if (focal_individual->not_at_threshold()) {
-      // in between updates, this individual has received food
-      focal_individual->set_next_t_nurse();
-      return; // done
-    }
-
-    // if the individual returned from foraging:
-    if (focal_individual->get_task() == forage) {
-      update_forager(focal_individual);
-
-      focal_individual->update_threshold(rndgen);
-      
-      if (focal_individual->not_at_threshold()) {
-        // start nursing
-        focal_individual->set_current_task(nurse);
-        nurses.push_back(focal_individual->get_id());
-      } else { // go out foraging again
-        focal_individual->set_current_task(forage);
-        focal_individual->set_next_t_forager(p.get_env_param().foraging_time);
-      }
-      focal_individual->update_tasks(t);
-    } else { // focal individual was nursing, and starts foraging
-      // (note that the threshold has been reached, otherwise
-      // it would've already been checked above.
-      remove_from_nurses(focal_individual->get_id());
-
-      focal_individual->set_next_t_forager(p.get_env_param().foraging_time);
-      focal_individual->set_current_task(forage);
-    }
-     focal_individual->update_tasks(t);
+  bool update_nurse(individual& focal_individual,
+                    float dt) {
+    focal_individual.update_fatbody(t);
+    float prob = focal_individual.forage_prob(dt);
+    return rndgen.bernouilli(prob);
   }
+
 
   void run_simulation() {
 
     while(t < p.get_meta_param().simulation_time) {
-      auto focal_individual = time_queue.top().ind;
-      time_queue.pop();
-      t = focal_individual->get_next_t();
-
-      if (check_time_interval(t, p.get_meta_param().data_interval)) {
-         write_intermediate_output_to_file(p.get_meta_param().output_file_name,
-                                           t);
+      float next_forage_t = p.get_meta_param().simulation_time;
+      individual* focal_individual;
+      if (!time_queue.empty()) {
+        focal_individual = time_queue.top().ind;
+        next_forage_t = focal_individual->get_next_t();
       }
 
-      update_individual(focal_individual);
-      // re-add individual to queue
-      time_queue.push(track_time(focal_individual));
-      std::cout << t << "\n";
+      while(t < next_forage_t) {
+        // update nurses!
+        std::vector<int> going_foraging;
+        for (auto i : nurses) {
+          if( update_nurse(colony[i], dt) ) {
+            going_foraging.push_back(i);
+          }
+        }
+
+        if (!going_foraging.empty()) {
+          for (auto i : going_foraging) {
+            remove_from_nurses(i);
+            colony[i].set_current_task(forage);
+            colony[i].set_next_t(t, p.get_env_param().foraging_time);
+            colony[i].update_tasks(t);
+            time_queue.push(track_time(&colony[i]));
+            focal_individual = time_queue.top().ind;
+            next_forage_t = focal_individual->get_next_t();
+          }
+        }
+
+        t += dt;
+
+        if (check_time_interval(t, p.get_meta_param().data_interval)) {
+           write_intermediate_output_to_file(p.get_meta_param().output_file_name,
+                                             t);
+        }
+      }
+
+      if (!time_queue.empty()) {      // now we update the next forager
+        time_queue.pop();
+        if (update_forager(focal_individual)) {
+                // re-add individual to queue
+          focal_individual->set_current_task(forage);
+          time_queue.push(track_time(focal_individual));
+        } else {
+          // individual starts nursing!
+          focal_individual->set_current_task(nurse);
+          nurses.push_back(focal_individual->get_id());
+        }
+        focal_individual->update_tasks(t);
+      }
+
+
+      std::cout << t << " " << nurses.size() << " " << colony.size() - nurses.size() << "\n";
     }
   }
 

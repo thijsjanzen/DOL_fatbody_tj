@@ -34,6 +34,7 @@ int main(int argc, char* argv[]) {
 
     is >> json_in;
     sim_param sim_par_in = json_in.get<sim_param>();
+
     Simulation sim(sim_par_in);
 
     sim.run_simulation();
