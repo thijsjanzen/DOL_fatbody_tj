@@ -75,10 +75,12 @@ public:
     ID = id;
     max_crop_size = p.crop_size;
     dominance = rndgen.normal(p.mean_dominance, p.sd_dominance);
+    crop = 0.0;
   }
 
   void process_crop(float fraction) {
     float processed = crop * fraction;
+
     fat_body += processed;
     crop -= processed;
   }
@@ -88,18 +90,32 @@ public:
     if (crop < 0.0) crop = 0.0;
   }
 
-  void receive_food(float& food, float conversion_rate, float max_fat_body) {
-    if (fat_body + food * conversion_rate > max_fat_body) {
-      food -= max_fat_body - fat_body / conversion_rate;
+  double receive_food(float food,
+                      float conversion_rate,
+                      float max_fat_body) {
+    float prev_fatbody = fat_body;
+    if ((fat_body + (food * conversion_rate)) > max_fat_body) {
+
+      float uptake = (max_fat_body - fat_body) / conversion_rate;
+
+      food -= uptake;
       fat_body = max_fat_body;
     } else {
       fat_body += food * conversion_rate;
       food = 0.0; // all the shared food is gone
     }
+
+    return food;
   }
 
   void update_tasks(float t) {
     previous_t = t;
+
+    if (!data.empty()) {
+      float temp_fatbody = std::get<2>(data.back());
+      float diff_fb = fat_body - temp_fatbody;
+    }
+
     data.push_back( std::make_tuple(t, current_task, fat_body));
   }
 
@@ -164,7 +180,9 @@ public:
   const std::vector< std::tuple<float, task, float > >& get_data() const {return data;}
 
   void set_fat_body(float fb) {fat_body = fb;}
-  void set_crop(float c) {crop = c;}
+  void set_crop(float c) {
+    crop = c;
+  }
   void set_previous_t(float t) {previous_t = t;}
   void set_current_task(task new_task) {current_task = new_task;}
 

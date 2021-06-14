@@ -49,6 +49,8 @@ struct Simulation {
   sim_param p;
   int previous_time_recording;
 
+  float brood_resources;
+
 
 
   Simulation(const sim_param& par) : p(par) {
@@ -58,6 +60,8 @@ struct Simulation {
     t = 0.0;
     dt = p.get_meta_param().dt;
     previous_time_recording = -1;
+
+    brood_resources = 0.0;
 
     for (int i = 0; i < p.get_meta_param().colony_size; ++i) {
       nurses.push_back(i);
@@ -127,7 +131,7 @@ struct Simulation {
   bool update_forager(individual* focal_individual) {
     focal_individual->update_fatbody(t);
 
-    focal_individual->set_crop(p.get_env_param().resource_amount);
+   // focal_individual->set_crop(p.get_env_param().resource_amount);
     focal_individual->process_crop(p.get_ind_param().proportion_fat_body_forager);
 
     if (p.get_meta_param().model_type > 0) {
@@ -148,8 +152,11 @@ struct Simulation {
           share_amount = rndgen.uniform();
         }
         if (p.get_meta_param().model_type == 2) {
-          share_amount = dominance_interaction(focal_individual->get_dominance(),
-                                               colony[index_other_individual].get_dominance());
+         // share_amount = dominance_interaction(focal_individual->get_dominance(),
+         //                                      colony[index_other_individual].get_dominance());
+          if (focal_individual->get_dominance() < colony[index_other_individual].get_dominance()) {
+            share_amount = 1.0f;
+          }
         }
         if (p.get_meta_param().model_type == 3) {
           share_amount = dominance_interaction(focal_individual->get_fat_body(),
@@ -157,18 +164,20 @@ struct Simulation {
         }
 
         float to_share = share_amount * focal_individual->get_crop();
-        colony[ index_other_individual ].receive_food(to_share,
-                                                      p.get_ind_param().proportion_fat_body_nurse,
-                                                      p.get_ind_param().max_fat_body);
 
-        float shared = share_amount * focal_individual->get_crop() - to_share;
+        double remainder = colony[ index_other_individual ].receive_food(to_share,
+                                                                         p.get_ind_param().proportion_fat_body_nurse,
+                                                                         p.get_ind_param().max_fat_body);
+
+        float shared = to_share - remainder;
+        brood_resources += shared * (1.0 - p.get_ind_param().proportion_fat_body_nurse);
+
         focal_individual->reduce_crop(shared);
       }
     }
     // the remainder in the crop is digested
-    float receive = focal_individual->get_crop();
-    focal_individual->receive_food(receive,
-                                  p.get_ind_param().proportion_fat_body_forager,
+    focal_individual->receive_food(focal_individual->get_crop(),
+                                  1.0,
                                   p.get_ind_param().max_fat_body);
     focal_individual->set_crop(0.0);
 
@@ -198,7 +207,7 @@ struct Simulation {
       while(t < next_forage_t) {
         // update nurses!
         std::vector<int> going_foraging;
-        for (auto i : nurses) {
+        for (auto i : nurses) { // nurses is vector with indices of individuals that are nursing
           if( update_nurse(colony[i], dt) ) {
             going_foraging.push_back(i);
           }
@@ -241,6 +250,10 @@ struct Simulation {
 
       std::cout << t << " " << nurses.size() << " " << colony.size() - nurses.size() << "\n";
     }
+    // end roll call:
+    for (int i = 0; i < colony.size(); ++i) {
+      colony[i].update_tasks(t);
+    }
   }
 
   void write_ants_to_file(std::string file_name) {
@@ -253,7 +266,8 @@ struct Simulation {
     int cnt = 0;
     for (const auto& i : colony) {
       for (auto j : i.get_data()) {
-        out << i.get_id() << " " << std::get<0>(j) << " " << std::get<1>(j) << " " << std::get<2>(j) << "\n"; // t, task, fat_body
+        out << i.get_id() << "\t" << std::get<0>(j) << "\t"
+            << std::get<1>(j) << "\t" << std::get<2>(j) << "\n"; // t, task, fat_body
       }
       cnt++;
     }
