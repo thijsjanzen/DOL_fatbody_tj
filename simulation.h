@@ -149,7 +149,7 @@ struct Simulation {
 
         float share_amount = 0.f;
         if (p.get_meta_param().model_type == 1) {
-          share_amount = rndgen.uniform();
+          share_amount = 1.f / num_interactions;  
         }
         if (p.get_meta_param().model_type == 2) {
          // share_amount = dominance_interaction(focal_individual->get_dominance(),
