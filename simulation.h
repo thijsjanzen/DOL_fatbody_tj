@@ -131,7 +131,7 @@ struct Simulation {
   bool update_forager(individual* focal_individual) {
     focal_individual->update_fatbody(t);
 
-   // focal_individual->set_crop(p.get_env_param().resource_amount);
+    focal_individual->set_crop(p.get_env_param().resource_amount);
     focal_individual->process_crop(p.get_ind_param().proportion_fat_body_forager);
 
     if (p.get_meta_param().model_type > 0) {
@@ -149,7 +149,7 @@ struct Simulation {
 
         float share_amount = 0.f;
         if (p.get_meta_param().model_type == 1) {
-          share_amount = 1.f / num_interactions;  
+          share_amount = 1.f / num_interactions;
         }
         if (p.get_meta_param().model_type == 2) {
          // share_amount = dominance_interaction(focal_individual->get_dominance(),
@@ -160,7 +160,7 @@ struct Simulation {
         }
         if (p.get_meta_param().model_type == 3) {
           share_amount = dominance_interaction(focal_individual->get_fat_body(),
-                                               colony[index_other_individual].get_fat_body());
+                                              colony[index_other_individual].get_fat_body());
         }
 
         float to_share = share_amount * focal_individual->get_crop();
@@ -248,7 +248,7 @@ struct Simulation {
       }
 
 
-      std::cout << t << " " << nurses.size() << " " << colony.size() - nurses.size() << "\n";
+      std::cout << t << " " << nurses.size() << " " << colony.size() - nurses.size() << " " << brood_resources << "\n";
     }
     // end roll call:
     for (int i = 0; i < colony.size(); ++i) {
