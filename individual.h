@@ -40,10 +40,7 @@ public:
 
 
   float forage_prob(float dt) {
-
-    float denom = (1.f + expf(fat_body - half_point));
-    float res = dt * 1.f / denom;
-    return res;
+    return dt * 1.0f / (1.0f + expf(fat_body - half_point));
   }
 
   void set_next_t(double t, double foraging_time) {

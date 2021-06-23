@@ -183,14 +183,14 @@ struct Simulation {
 
     // now we need to decide if we go foraging
     float prob = focal_individual->forage_prob(dt);
-    return rndgen.bernouilli(prob);
+    return rndgen.uniform() < prob;
   }
 
   bool update_nurse(individual& focal_individual,
                     float dt) {
     focal_individual.update_fatbody(t);
     float prob = focal_individual.forage_prob(dt);
-    return rndgen.bernouilli(prob);
+    return rndgen.uniform() < prob;
   }
 
 
@@ -230,6 +230,7 @@ struct Simulation {
         if (check_time_interval(t, p.get_meta_param().data_interval)) {
            write_intermediate_output_to_file(p.get_meta_param().output_file_name,
                                              t);
+               std::cout << t << " " << nurses.size() << " " << colony.size() - nurses.size() << " " << brood_resources << "\n";
         }
       }
 
@@ -248,7 +249,7 @@ struct Simulation {
       }
 
 
-      std::cout << t << " " << nurses.size() << " " << colony.size() - nurses.size() << " " << brood_resources << "\n";
+
     }
     // end roll call:
     for (int i = 0; i < colony.size(); ++i) {
