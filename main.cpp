@@ -12,6 +12,7 @@
 #include "individual.h"
 #include "parameters.h"
 #include "json.hpp"
+#include <chrono>
 
 int main(int argc, char* argv[]) {
   try {
@@ -34,9 +35,15 @@ int main(int argc, char* argv[]) {
 
     is >> json_in;
     sim_param sim_par_in = json_in.get<sim_param>();
+
     Simulation sim(sim_par_in);
 
+
+    auto clock_start = std::chrono::system_clock::now();;
     sim.run_simulation();
+    auto clock_now = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = clock_now - clock_start;
+    std::cout << "this took: " << elapsed_seconds.count() << "\n";
 
     if (sim_par_in.get_meta_param().data_interval == 0) {
       sim.write_ants_to_file(sim_par_in.get_meta_param().output_file_name);

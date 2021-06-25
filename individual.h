@@ -15,7 +15,22 @@
 enum task {nurse, forage};
 
 struct individual {
+private:
+  float fat_body;
+  float crop;
+  float max_crop_size;
+  float previous_t;
+  float next_t;
+  float half_point;
+  float dominance;
 
+  int ID;
+
+  std::vector<float> metabolic_rate;
+  task current_task;
+  std::vector< std::tuple<float, task, float > > data;
+
+public:
   // delete the copy and move operators:
   // individuals stay in the colony vector and *don't* move
   individual(individual&&) = delete;
@@ -24,51 +39,45 @@ struct individual {
   const individual& operator=(const individual&) = delete;
 
 
+  float forage_prob(float dt) {
+    return dt * 1.0f / (1.0f + expf(fat_body - half_point));
+  }
+
+  void set_next_t(double t, double foraging_time) {
+    next_t = t + foraging_time;
+  }
+
   individual() {
-    previous_t = 0.0;
     current_task = nurse;
     crop = 0.0;
     fat_body = 1.0;
   }
 
-  void update_fatbody(float current_t) {
-    fat_body -= (current_t - previous_t) * metabolic_rate[ current_task ];
+  void update_fatbody(float t) {
+    float dt = t - previous_t;
+    previous_t = t;
+    fat_body -= dt * metabolic_rate[ current_task ];
     if (fat_body < 0) fat_body = 0.0; // should not happen!
-    previous_t = current_t;
   }
 
-  void update_threshold(rnd_t& rndgen) {
-    threshold = rndgen.threshold_normal();
-    set_next_t_nurse();
-  }
-
-  void set_next_t_nurse() {
-    if ((fat_body - threshold) > 0) {
-      next_t = previous_t + (fat_body - threshold) / metabolic_rate[ current_task];
-    }
-  }
-
-  void set_next_t_forager(float foraging_time) {
-    next_t = previous_t + foraging_time;
-  }
-
-  bool not_at_threshold() {
-    if (fat_body - threshold > 1e-2f) return true;
-    return false;
-  }
-
-
-  void set_params(const ind_param& p, int id) {
+  void set_params(const ind_param& p,
+                  int id,
+                  rnd_t& rndgen) {
     fat_body = p.fat_body_size;
 
     metabolic_rate = std::vector<float>{p.metabolic_cost_nurses,
                                         p.metabolic_cost_foragers};
+
+    half_point = p.half_point;
     ID = id;
     max_crop_size = p.crop_size;
+    dominance = rndgen.normal(p.mean_dominance, p.sd_dominance);
+    crop = 0.0;
   }
 
   void process_crop(float fraction) {
     float processed = crop * fraction;
+
     fat_body += processed;
     crop -= processed;
   }
@@ -78,12 +87,32 @@ struct individual {
     if (crop < 0.0) crop = 0.0;
   }
 
-  void receive_food(float food, float conversion_rate) {
-    fat_body += food * conversion_rate;
+  double receive_food(float food,
+                      float conversion_rate,
+                      float max_fat_body) {
+    float prev_fatbody = fat_body;
+    if ((fat_body + (food * conversion_rate)) > max_fat_body) {
+
+      float uptake = (max_fat_body - fat_body) / conversion_rate;
+
+      food -= uptake;
+      fat_body = max_fat_body;
+    } else {
+      fat_body += food * conversion_rate;
+      food = 0.0; // all the shared food is gone
+    }
+
+    return food;
   }
 
   void update_tasks(float t) {
     previous_t = t;
+
+    if (!data.empty()) {
+      float temp_fatbody = std::get<2>(data.back());
+      float diff_fb = fat_body - temp_fatbody;
+    }
+
     data.push_back( std::make_tuple(t, current_task, fat_body));
   }
 
@@ -139,6 +168,7 @@ struct individual {
 
 
   float get_fat_body() const {return fat_body;}
+  float get_dominance() const {return dominance;}
   float get_crop() const {return crop;}
   float get_previous_t() const {return previous_t;}
   float get_next_t() const {return next_t;}
@@ -147,25 +177,15 @@ struct individual {
   const std::vector< std::tuple<float, task, float > >& get_data() const {return data;}
 
   void set_fat_body(float fb) {fat_body = fb;}
-  void set_crop(float c) {crop = c;}
+  void set_crop(float c) {
+    crop = c;
+  }
   void set_previous_t(float t) {previous_t = t;}
   void set_current_task(task new_task) {current_task = new_task;}
 
 
 
-private:
-  float fat_body;
-  float crop;
-  float max_crop_size;
-  float previous_t;
-  float next_t;
-  float threshold;
 
-  int ID;
-
-  std::vector<float> metabolic_rate;
-  task current_task;
-  std::vector< std::tuple<float, task, float > > data;
 };
 
 
