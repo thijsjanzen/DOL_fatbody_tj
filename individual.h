@@ -90,7 +90,6 @@ public:
   double receive_food(float food,
                       float conversion_rate,
                       float max_fat_body) {
-    float prev_fatbody = fat_body;
     if ((fat_body + (food * conversion_rate)) > max_fat_body) {
 
       float uptake = (max_fat_body - fat_body) / conversion_rate;
@@ -107,11 +106,6 @@ public:
 
   void update_tasks(float t) {
     previous_t = t;
-
-    if (!data.empty()) {
-      float temp_fatbody = std::get<2>(data.back());
-      float diff_fb = fat_body - temp_fatbody;
-    }
 
     data.push_back( std::make_tuple(t, current_task, fat_body));
   }

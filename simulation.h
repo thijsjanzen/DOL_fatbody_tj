@@ -252,7 +252,7 @@ struct Simulation {
 
     }
     // end roll call:
-    for (int i = 0; i < colony.size(); ++i) {
+    for (size_t i = 0; i < colony.size(); ++i) {
       colony[i].update_tasks(t);
     }
   }
