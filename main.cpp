@@ -36,6 +36,8 @@ int main(int argc, char* argv[]) {
     is >> json_in;
     sim_param sim_par_in = json_in.get<sim_param>();
 
+    std::cout << "JSON file read\n";
+
     Simulation sim(sim_par_in);
 
 
