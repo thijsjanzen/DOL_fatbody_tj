@@ -29,7 +29,7 @@ struct rnd_t {
   std::uniform_real_distribution<float> unif_dist =
     std::uniform_real_distribution<float>(0.0f, 1.0f);
 
-  int random_number(size_t n)    {
+  int random_number(int n)    {
     if(n <= 1) return 0;
     return std::uniform_int_distribution<> (0, static_cast<int>(n - 1))(rndgen);
   }

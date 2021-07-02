@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
     sim.run_simulation();
     auto clock_now = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds = clock_now - clock_start;
-    std::cout << "this took: " << elapsed_seconds.count() << "\n";
+    std::cout << "this took: " << elapsed_seconds.count() << "seconds\n";
 
     if (sim_par_in.get_meta_param().data_interval == 0) {
       sim.write_ants_to_file(sim_par_in.get_meta_param().output_file_name);

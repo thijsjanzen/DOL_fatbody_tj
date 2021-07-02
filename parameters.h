@@ -22,33 +22,28 @@ struct meta_param {
 
   int model_type = 3; // 0 = no sharing, 1 = random sharing, 2 = dominance sharing, 3 = evolving dominance
 
-  float dt = 0.01;
-
-
   int max_number_interactions = 3; // max number of interactions with nurses at foraging return
 };
 
 struct ind_param {
   float metabolic_cost_nurses = 0.5;
   float metabolic_cost_foragers = 0.5;
-  double min_fat_body = 8.0; // new individuals have a fat body that has at least this size
-  double max_fat_body = 12.0; // new individuals have a fat body that has this size at maximum
-  double min_for_abi = 1.0; // minimal foraging ability for new individuals
-  double max_for_abi = 1.0;  // maximal foraging ability for new individuals
+  float max_fat_body = 12.0; // new individuals have a fat body that has this size at maximum
+  float init_fat_body = 10.0;
   float crop_size = 5.0; // maximal resources that can be carried in crop
-  double fat_body_size = 15.0; // maximal resources that can be accumulated in fatbody
-  double min_share = 0.0;
-  double max_share = 1.0;
   float proportion_fat_body_forager = 0.2; // proportion of resources allocated to the fatbody by foragers
   float proportion_fat_body_nurse   = 0.2;  // proportion of resources allocated to the fatbody by nurses
   float mean_dominance = 5.0;
   float sd_dominance = 2.0;
-  float half_point = 5;
+  float mean_threshold = 5.0;
+  float sd_threshold = 1.7;
+  float food_handling_time = 0.5;
 };
 
 struct env_param {
   float resource_amount = 1.0;
   float foraging_time = 5.0;
+
 };
 
 

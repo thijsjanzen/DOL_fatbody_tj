@@ -17,7 +17,6 @@ void to_json(nlohmann::json& j, const meta_param& t)
   NLOHMANN_JSON_TO(max_number_interactions);
   NLOHMANN_JSON_TO(dol_file_name);
   NLOHMANN_JSON_TO(output_file_name);
-  NLOHMANN_JSON_TO(dt);
 }
 
 void from_json(const nlohmann::json& j, meta_param& t)
@@ -28,7 +27,6 @@ void from_json(const nlohmann::json& j, meta_param& t)
   NLOHMANN_JSON_FROM(max_number_interactions);
   NLOHMANN_JSON_FROM(dol_file_name);
   NLOHMANN_JSON_FROM(output_file_name);
-  NLOHMANN_JSON_FROM(dt);
 }
 
 
@@ -40,38 +38,32 @@ void to_json(nlohmann::json& j, const ind_param& t)
 {
   NLOHMANN_JSON_TO(metabolic_cost_nurses);
   NLOHMANN_JSON_TO(metabolic_cost_foragers);
-  NLOHMANN_JSON_TO(min_fat_body);
   NLOHMANN_JSON_TO(max_fat_body);
-  NLOHMANN_JSON_TO(min_for_abi);
-  NLOHMANN_JSON_TO(max_for_abi);
   NLOHMANN_JSON_TO(crop_size);
-  NLOHMANN_JSON_TO(fat_body_size);
-  NLOHMANN_JSON_TO(min_share);
-  NLOHMANN_JSON_TO(max_share);
+  NLOHMANN_JSON_TO(init_fat_body);
   NLOHMANN_JSON_TO(proportion_fat_body_forager);
   NLOHMANN_JSON_TO(proportion_fat_body_nurse);
   NLOHMANN_JSON_TO(mean_dominance);
   NLOHMANN_JSON_TO(sd_dominance);
-  NLOHMANN_JSON_TO(half_point);
+  NLOHMANN_JSON_TO(mean_threshold);
+  NLOHMANN_JSON_TO(sd_threshold);
+  NLOHMANN_JSON_TO(food_handling_time);
 }
 
 void from_json(const nlohmann::json& j, ind_param& t)
 {
   NLOHMANN_JSON_FROM(metabolic_cost_nurses);
   NLOHMANN_JSON_FROM(metabolic_cost_foragers);
-  NLOHMANN_JSON_FROM(min_fat_body);
   NLOHMANN_JSON_FROM(max_fat_body);
-  NLOHMANN_JSON_FROM(min_for_abi);
-  NLOHMANN_JSON_FROM(max_for_abi);
   NLOHMANN_JSON_FROM(crop_size);
-  NLOHMANN_JSON_FROM(fat_body_size);
-  NLOHMANN_JSON_FROM(min_share);
-  NLOHMANN_JSON_FROM(max_share);
+  NLOHMANN_JSON_FROM(init_fat_body);
   NLOHMANN_JSON_FROM(proportion_fat_body_forager);
   NLOHMANN_JSON_FROM(proportion_fat_body_nurse);
   NLOHMANN_JSON_FROM(mean_dominance);
   NLOHMANN_JSON_FROM(sd_dominance);
-  NLOHMANN_JSON_FROM(half_point);
+  NLOHMANN_JSON_FROM(mean_threshold);
+  NLOHMANN_JSON_FROM(sd_threshold);
+  NLOHMANN_JSON_FROM(food_handling_time);
 }
 
 
