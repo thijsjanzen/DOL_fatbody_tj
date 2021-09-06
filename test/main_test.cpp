@@ -23,9 +23,9 @@ TEST_CASE("TEST simulation") {
   CHECK(test_sim.colony.size() == params.get_meta_param().colony_size);
 
   bool checked = test_sim.check_time_interval(1.f, 2.f, 1.f);
-  REQUIRE(checked == true);
+  CHECK(checked == true);
   checked = test_sim.check_time_interval(1.f, 2.f, 2.f);
-  REQUIRE(checked == false);
+  CHECK(checked == false);
 
   test_sim.remove_from_nurses(10);
   REQUIRE(test_sim.nurses.size() == params.get_meta_param().colony_size - 1);
@@ -51,6 +51,11 @@ TEST_CASE("TEST simulation") {
   test_sim.share_resources(&test_sim.colony[0]);
   size_t num_nurses_shared = test_sim.nurses.size();
   CHECK(num_nurses_shared == num_nurses - params.get_meta_param().max_number_interactions);
+
+  // update forager
+  test_sim.colony[0].set_fat_body(1.f);
+  test_sim.update_forager(&test_sim.colony[0]);
+  CHECK(test_sim.colony[0].get_fat_body() > 1.f); // he received from crop/foraging
 
 }
 

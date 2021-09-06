@@ -81,13 +81,12 @@ struct Simulation {
        return false;
      }
 
-     int t1 = static_cast<int>(t / time_interval);
-     int t2 = static_cast<int>(new_t / time_interval);
-
-    if(t1 - t2 != 0) {
+    int dt = static_cast<int>(new_t - t);
+    if (dt / time_interval > 0) {
       return true;
+    } else {
+      return false;
     }
-    return false;
    }
 
    void write_intermediate_output_to_file(std::string file_name,
@@ -254,7 +253,7 @@ struct Simulation {
     }
   }
 
-  void update_nurses(individual* focal_individual) {
+  void update_nurse_list(individual* focal_individual) {
     // individual started nursing:
     if (focal_individual->get_task() == nurse) {
       // but was not nursing:
@@ -306,7 +305,7 @@ struct Simulation {
       }
 
       pick_task(focal_individual);
-      update_nurses(focal_individual);
+      update_nurse_list(focal_individual);
 
       focal_individual->update_tasks(t);
 
