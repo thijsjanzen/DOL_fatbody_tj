@@ -57,6 +57,18 @@ TEST_CASE("TEST simulation") {
   test_sim.update_forager(&test_sim.colony[0]);
   CHECK(test_sim.colony[0].get_fat_body() > 1.f); // he received from crop/foraging
 
+// update task
+  test_sim.colony[0].set_fat_body(1000.f);
+  test_sim.colony[0].set_current_task(forage);
+  test_sim.colony[0].set_previous_task();
+  test_sim.pick_task(&test_sim.colony[0]);
+  CHECK(test_sim.colony[0].get_task() == nurse);
+
+  test_sim.colony[0].set_fat_body(0.f);
+  test_sim.colony[0].set_current_task(nurse);
+  test_sim.colony[0].set_previous_task();
+  test_sim.pick_task(&test_sim.colony[0]);
+  CHECK(test_sim.colony[0].get_task() == forage);
 }
 
 

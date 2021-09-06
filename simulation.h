@@ -209,21 +209,6 @@ struct Simulation {
     return;
   }
 
-  bool check_doubles() {
-    int num_doubles = 0;
-    for (size_t i = 0; i < nurses.size(); ++i) {
-      for (size_t j = 0; j < nurses.size(); ++j) {
-        if (i != j) {
-          if (nurses[i] == nurses[j])
-            num_doubles++;
-        }
-      }
-    }
-    if (num_doubles == 0) return false;
-    return true;
-  }
-
-
   void pick_task(individual* focal_individual) {
 
     if (focal_individual->get_previous_task() == forage) {
