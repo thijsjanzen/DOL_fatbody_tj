@@ -8,6 +8,18 @@
 #include <fstream>
 #include <string>
 
+TEST_CASE("TEST simulation") {
+  sim_param params;
+  rnd_t rndgen(42);
+
+  Simulation test_sim(params);
+
+  CHECK(test_sim.colony.size() == params.get_meta_param().colony_size);
+}
+
+
+
+
 TEST_CASE("TEST individual") {
 
   sim_param params;
