@@ -28,3 +28,4 @@ dol_test/Build/Products/Debug/dol_test
 *.xcworkspacedata
 *.xcuserstate
 *.tmp
+*.xcbkptlist
