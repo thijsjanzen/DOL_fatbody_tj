@@ -254,47 +254,51 @@ struct Simulation {
     }
   }
 
+  void update_colony() {
+    auto next_ind = time_queue.top();
+    time_queue.pop();
+    if (next_ind.ind->get_next_t() > next_ind.time) {
+      time_queue.push(track_time(next_ind.ind));
+      return;
+    }
+
+    auto focal_individual = next_ind.ind;
+
+    double new_t = focal_individual->get_next_t();
+
+    if (check_time_interval(t, new_t, p.get_meta_param().data_interval)) {
+       write_intermediate_output_to_file(p.get_meta_param().output_file_name,
+                                         t);
+     //  std::cout << t << " " << nurses.size() << " " << colony.size() - nurses.size() << " " << brood_resources << "\n";
+    }
+
+    t = new_t;
+
+    // update focal individual
+    focal_individual->set_previous_task();
+
+    if (focal_individual->get_task() == forage) {
+      // update forager
+      update_forager(focal_individual);
+    } else {
+      // nurse done nursing, or done handling food
+      update_nurse(focal_individual);
+    }
+
+    pick_task(focal_individual);
+    update_nurse_list(focal_individual);
+
+    focal_individual->update_tasks(t);
+
+    time_queue.push(track_time(focal_individual));
+  }
+
+
 
   void run_simulation() {
 
     while(t < p.get_meta_param().simulation_time) {
-
-      auto next_ind = time_queue.top();
-      time_queue.pop();
-      if (next_ind.ind->get_next_t() > next_ind.time) {
-        time_queue.push(track_time(next_ind.ind));
-        continue;
-      }
-
-      auto focal_individual = next_ind.ind;
-
-      double new_t = focal_individual->get_next_t();
-
-      if (check_time_interval(t, new_t, p.get_meta_param().data_interval)) {
-         write_intermediate_output_to_file(p.get_meta_param().output_file_name,
-                                           t);
-         std::cout << t << " " << nurses.size() << " " << colony.size() - nurses.size() << " " << brood_resources << "\n";
-      }
-
-      t = new_t;
-
-      // update focal individual
-      focal_individual->set_previous_task();
-
-      if (focal_individual->get_task() == forage) {
-        // update forager
-        update_forager(focal_individual);
-      } else {
-        // nurse done nursing, or done handling food
-        update_nurse(focal_individual);
-      }
-
-      pick_task(focal_individual);
-      update_nurse_list(focal_individual);
-
-      focal_individual->update_tasks(t);
-
-      time_queue.push(track_time(focal_individual));
+      update_colony();
     }
     // end roll call:
     for (size_t i = 0; i < colony.size(); ++i) {

@@ -40,11 +40,6 @@ TEST_CASE("TEST simulation") {
   REQUIRE(test_sim.nurses.size() == params.get_meta_param().colony_size - 2);
   REQUIRE(test_sim.nurses[10] == 98); // swapped
 
-
-
-
-
-
   float dom = test_sim.dominance_interaction(1.f, 2.f);
   REQUIRE(dom < 1.f);
   dom = test_sim.dominance_interaction(1.f, 1.f);
@@ -83,8 +78,28 @@ TEST_CASE("TEST simulation") {
   test_sim.colony[0].set_previous_task();
   test_sim.pick_task(&test_sim.colony[0]);
   CHECK(test_sim.colony[0].get_task() == forage);
+
+
+  auto temp_t = test_sim.t;
+  test_sim.update_colony();
+  auto new_t = test_sim.t;
+  REQUIRE(new_t > temp_t);
 }
 
+TEST_CASE("TEST run simulation") {
+  ind_param ind;
+  env_param env;
+  meta_param meta;
+  meta.model_type = 1;
+
+  sim_param params(env, ind, meta);
+  rnd_t rndgen(42);
+
+  Simulation test_sim(params);
+
+  test_sim.run_simulation();
+  REQUIRE(test_sim.t >= params.get_meta_param().simulation_time);
+}
 
 
 
@@ -148,5 +163,4 @@ TEST_CASE("TEST individual") {
   auto temp_data = test_indiv.get_data().back();
   CHECK(std::get<0>(temp_data) == 1.f);
   CHECK(std::get<1>(temp_data) == test_indiv.get_task());
-
 }
