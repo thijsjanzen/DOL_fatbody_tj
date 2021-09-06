@@ -44,14 +44,14 @@ public:
   const individual& operator=(const individual&) = delete;
 
   void new_next_t(double nt) {
-//    assert(nt > next_t);
+ //   assert(nt > next_t);
     next_t = nt;
   }
 
   double get_next_t_threshold(float t, rnd_t& rndgen) {
     threshold = rndgen.threshold_normal();
     double dt = (fat_body - threshold) / metabolic_rate[ nurse ];
-    assert(dt > 0);
+ 
     return(t + dt);
   }
 
@@ -81,7 +81,7 @@ public:
 
   void update_fatbody(float t) {
     float dt = t - previous_t;
-    assert(dt > 0);
+    assert(dt >= 0);
     if (dt < 0) return;
     previous_t = t;
     fat_body -= dt * metabolic_rate[ current_task ];

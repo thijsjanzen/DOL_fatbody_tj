@@ -91,6 +91,7 @@ TEST_CASE("TEST run simulation") {
   env_param env;
   meta_param meta;
   meta.model_type = 1;
+  meta.simulation_time = 100;
 
   sim_param params(env, ind, meta);
   rnd_t rndgen(42);

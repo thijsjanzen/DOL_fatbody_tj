@@ -55,8 +55,24 @@ class Compare=std::less<typename Container::value_type>> class custom_priority_q
        else {
         return false;
        }
- }
+      }
 };
+
+bool is_in_order(const custom_priority_queue< track_time,
+                 std::vector<track_time>, cmp_time >& pq) {
+
+  auto pq_copy(pq);
+  auto prev = pq_copy.top();
+  pq_copy.pop();
+  while(!pq_copy.empty()) {
+    auto next = pq_copy.top();
+    if (next.time < prev.time) {
+      return false;
+    }
+    pq_copy.pop();
+  }
+  return true;
+}
 
 
 
@@ -98,7 +114,7 @@ struct Simulation {
       nurses.push_back(colony[i].get_id());
 
       colony[i].update_tasks(t);
-      time_queue.push(track_time(&colony[i]));
+      add_to_timequeue(&colony[i]);
     }
   }
 
@@ -163,8 +179,9 @@ struct Simulation {
   void update_queue(int index) {
     time_queue.remove(index);
     auto local_index = std::find(colony.begin(), colony.end(), index);
-    int cnt = std::distance(colony.begin(), local_index);
-    time_queue.push(track_time(&colony[cnt]));
+    size_t cnt = std::distance(colony.begin(), local_index);
+    add_to_timequeue(&colony[cnt]);
+    assert(is_in_order(time_queue));
   }
 
   void share_resources(individual* focal_individual) {
@@ -290,11 +307,17 @@ struct Simulation {
     }
   }
 
+  void add_to_timequeue(individual* focal_individual) {
+    assert(focal_individual->get_next_t() > t);
+    time_queue.push(track_time(focal_individual));
+  }
+
+
   void update_colony() {
     auto next_ind = time_queue.top();
     time_queue.pop();
     if (next_ind.ind->get_next_t() > next_ind.time) {
-      time_queue.push(track_time(next_ind.ind));
+      add_to_timequeue(next_ind.ind);
       return;
     }
 
@@ -302,7 +325,11 @@ struct Simulation {
 
     double new_t = focal_individual->get_next_t();
 
-    assert(new_t > t);
+    assert(is_in_order(time_queue));
+    if(new_t < t) {
+      int a = 5;
+    }
+    assert(new_t >= t);
     t = new_t;
 
 
@@ -322,7 +349,8 @@ struct Simulation {
 
     focal_individual->update_tasks(t);
 
-    time_queue.push(track_time(focal_individual));
+    add_to_timequeue(focal_individual);
+    assert(is_in_order(time_queue));
   }
 
 
