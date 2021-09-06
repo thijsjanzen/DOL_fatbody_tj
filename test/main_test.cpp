@@ -9,7 +9,13 @@
 #include <string>
 
 TEST_CASE("TEST simulation") {
-  sim_param params;
+
+  ind_param ind;
+  env_param env;
+  meta_param meta;
+  meta.model_type = 1;
+
+  sim_param params(env, ind, meta);
   rnd_t rndgen(42);
 
   Simulation test_sim(params);
@@ -18,7 +24,7 @@ TEST_CASE("TEST simulation") {
 
   bool checked = test_sim.check_time_interval(1.f, 2.f, 1.f);
   REQUIRE(checked == true);
-  checked = test_sim.check_time_interval(1.f, 2.f, 0.5f);
+  checked = test_sim.check_time_interval(1.f, 2.f, 2.f);
   REQUIRE(checked == false);
 
   test_sim.remove_from_nurses(10);
@@ -38,7 +44,13 @@ TEST_CASE("TEST simulation") {
   test_sim.update_nurse(&test_sim.colony[0]);
   CHECK(test_sim.colony[0].get_fat_body() < 1.f);
 
-    
+
+  // forager sharing resources
+  test_sim.colony[0].set_fat_body(1.f);
+  size_t num_nurses = test_sim.nurses.size();
+  test_sim.share_resources(&test_sim.colony[0]);
+  size_t num_nurses_shared = test_sim.nurses.size();
+  CHECK(num_nurses_shared == num_nurses - params.get_meta_param().max_number_interactions);
 
 }
 
