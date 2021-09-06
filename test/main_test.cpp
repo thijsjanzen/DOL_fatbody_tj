@@ -27,9 +27,23 @@ TEST_CASE("TEST simulation") {
   checked = test_sim.check_time_interval(1.f, 2.f, 2.f);
   CHECK(checked == false);
 
+
+  test_sim.colony[0].set_previous_task();
+  test_sim.colony[0].set_current_task(forage);
+  test_sim.update_nurse_list(&test_sim.colony[0]);
+  // should be removed from nurses now.
+  test_sim.nurses.size() == params.get_meta_param().colony_size - 1;
+
+
+  test_sim.colony[10].set_current_task(forage);
   test_sim.remove_from_nurses(10);
-  REQUIRE(test_sim.nurses.size() == params.get_meta_param().colony_size - 1);
-  REQUIRE(test_sim.nurses[10] == 99); // swapped
+  REQUIRE(test_sim.nurses.size() == params.get_meta_param().colony_size - 2);
+  REQUIRE(test_sim.nurses[10] == 98); // swapped
+
+
+
+
+
 
   float dom = test_sim.dominance_interaction(1.f, 2.f);
   REQUIRE(dom < 1.f);
