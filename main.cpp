@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
     Simulation sim(sim_par_in);
 
 
-    auto clock_start = std::chrono::system_clock::now();;
+    auto clock_start = std::chrono::system_clock::now();
     sim.run_simulation();
     auto clock_now = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds = clock_now - clock_start;

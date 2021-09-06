@@ -140,7 +140,7 @@ struct Simulation {
     if (p.get_meta_param().model_type > 0) {
       // in model 0, there is NO sharing
       size_t num_interactions = std::min( static_cast<size_t>(p.get_meta_param().max_number_interactions),
-                                         static_cast<size_t>(nurses.size()));
+                                          static_cast<size_t>(nurses.size()));
 
       std::vector< int > visited_nurses(num_interactions);
 

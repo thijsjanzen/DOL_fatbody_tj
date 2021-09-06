@@ -43,7 +43,6 @@ struct ind_param {
 struct env_param {
   float resource_amount = 1.0;
   float foraging_time = 5.0;
-
 };
 
 
