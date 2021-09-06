@@ -1,0 +1,28 @@
+name: test_for_codecov
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-and-upstream:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          fetch-depth: 2
+      - name: Before Install
+        run: |
+          sudo apt-get install g++
+      - name: Run Tests
+        run: |
+          g++ -std=c++14 -o TestProgram -fprofile-arcs -ftest-coverage -fprofile-generate test/main_test.cpp parameters.cpp simulation.cpp
+          ./TestProgram
+          gcov -o . test/main_test.cpp parameters.cpp simulation.cpp
+      - name: Upload
+        uses: codecov/codecov-action@v1
+        with:
+          files: simulation.cpp.gcov,parameters.cpp.gcov,simulation.h.gcov,rand_t.h.gcov,parameters.h.gcov,individual.h.gcov
+          token: ${{ secrets.CODECOV_TOKEN }}
