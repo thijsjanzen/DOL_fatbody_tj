@@ -2,3 +2,12 @@
 dol_fatbody_tj
 *.txt
 *.json
+*.hmap
+*.xcent
+*.dat
+*.o
+*.dia
+*.LinkFileList
+*.xcbuild
+*.523518_hash=64cc039125d7a4fee7c3cd7287029832-json
+dol_test/Build/Intermediates/XCBuildData/PIFCache/target/TARGET@v11_hash=B5F4D58B295B0F5A0D9BAABFE5201B6F-json

@@ -437,6 +437,28 @@ TEST_CASE("TEST ant worker", "[ant worker]") {
 
 }
 
+TEST_CASE("TEST freq") {
+  sim_param params;
+  rnd_t rndgen(42);
+  int id = 0;
+
+  individual test_indiv;
+  test_indiv.set_params(params.get_ind_param(),
+                        id, rndgen);
+
+  test_indiv.set_current_task(nurse);
+  test_indiv.update_tasks(1.f);
+  test_indiv.set_previous_task();
+  test_indiv.set_current_task(forage);
+  test_indiv.update_tasks(2.f);
+
+  float freq_s = test_indiv.calc_freq_switches();
+  CHECK(freq_s == 1.f); // switches all the way!
+}
+
+
+
+
 
 TEST_CASE("TEST reproduce ant queen", "[ant queen]")
 {
@@ -520,7 +542,18 @@ TEST_CASE("TEST food ant queen", "[ant queen]")
   focal_queen.fat_body = 10.f;
   CHECK(focal_queen.survival(5, temprand, temp_params.maintenance, temp_params.num_age_classes) == true);
 
+<<<<<<< Updated upstream
 }
+=======
+  new_food = test_indiv.handle_food(5.f, // food
+                                    0.5f, // conversion_rate
+                                    2.f,  // max_fat_body
+                                    2,    // t
+                                    0.5); // handling_time
+  CHECK(test_indiv.get_fat_body() == 2.f);
+  CHECK(new_food == 4.f); // 5 - 2 * 0.5 = 4
+
+>>>>>>> Stashed changes
 
 
 

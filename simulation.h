@@ -25,6 +25,13 @@ struct track_time {
      ind = input;
      time = ind->get_next_t();
    }
+
+  bool operator==(int index) {
+    if (ind->get_id() == index) {
+      return true;
+    }
+    return false;
+  }
 };
 
 struct cmp_time {
@@ -33,14 +40,33 @@ struct cmp_time {
   }
 };
 
+template<typename T, class Container=std::vector<T>,
+class Compare=std::less<typename Container::value_type>> class custom_priority_queue : public std::priority_queue<T, Container, Compare>
+{
+  public:
+
+      bool remove(int value) {
+        auto it = std::find(this->c.begin(), this->c.end(), value);
+        if (it != this->c.end()) {
+            this->c.erase(it);
+            std::make_heap(this->c.begin(), this->c.end(), this->comp);
+            return true;
+       }
+       else {
+        return false;
+       }
+ }
+};
+
+
 
 struct Simulation {
   std::vector< individual > colony;
 
   std::vector<int> nurses;
 
-  std::priority_queue< track_time,
-                       std::vector<track_time>, cmp_time > time_queue;
+  custom_priority_queue< track_time,
+                         std::vector<track_time>, cmp_time > time_queue;
 
   rnd_t rndgen;
 
@@ -77,7 +103,7 @@ struct Simulation {
     }
   }
 
-  bool check_time_interval(float t, float new_t, int time_interval) {
+  bool check_time_interval(float t, float new_t, int time_interval) const {
      if (time_interval <= 0) {
        return false;
      }
@@ -136,6 +162,13 @@ struct Simulation {
     return 1.f / (1.f + expf(fb_self - fb_other));
   }
 
+  void update_queue(int index) {
+    time_queue.remove(index);
+    auto local_index = std::find(colony.begin(), colony.end(), index);
+    int cnt = std::distance(colony.begin(), local_index);
+    time_queue.push(track_time(&colony[cnt]));
+  }
+
   void share_resources(individual* focal_individual) {
     if (p.get_meta_param().model_type > 0) {
       // in model 0, there is NO sharing
@@ -184,6 +217,9 @@ struct Simulation {
         brood_resources += shared * (1.0 - p.get_ind_param().proportion_fat_body_nurse);
 
         focal_individual->reduce_crop(shared);
+
+        // now we should move colony[ index_other_individual] in the queue
+        update_queue(index_other_individual);
       }
 
       for (auto nurse_id : visited_nurses) {
@@ -274,9 +310,19 @@ struct Simulation {
 
 
 
+<<<<<<< Updated upstream
   void run_simulation() {
 
     while(t < p.get_meta_param().simulation_time) {
+=======
+    if (check_time_interval(t, new_t, p.get_meta_param().data_interval)) {
+       write_intermediate_output_to_file(p.get_meta_param().output_file_name,
+                                         t);
+     //  std::cout << t << " " << nurses.size() << " " << colony.size() - nurses.size() << " " << brood_resources << "\n";
+    }
+    assert(new_t > t);
+    t = new_t;
+>>>>>>> Stashed changes
 
       auto next_ind = time_queue.top();
       time_queue.pop();

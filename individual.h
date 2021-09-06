@@ -44,12 +44,14 @@ public:
   const individual& operator=(const individual&) = delete;
 
   void new_next_t(double nt) {
+//    assert(nt > next_t);
     next_t = nt;
   }
 
   double get_next_t_threshold(float t, rnd_t& rndgen) {
     threshold = rndgen.threshold_normal();
     double dt = (fat_body - threshold) / metabolic_rate[ nurse ];
+    assert(dt > 0);
     return(t + dt);
   }
 
@@ -69,16 +71,21 @@ public:
 
   individual() {
     current_task = nurse;
-    crop = 0.0;
-    fat_body = 1.0;
+    previous_task = nurse;
+    crop = 0.f;
+    fat_body = 1.f;
     is_food_handling = false;
+    previous_t = 0.f;
+    next_t = 0.f;
   }
 
   void update_fatbody(float t) {
     float dt = t - previous_t;
+    assert(dt > 0);
+    if (dt < 0) return;
     previous_t = t;
     fat_body -= dt * metabolic_rate[ current_task ];
-    if (fat_body < 0) fat_body = 0.0; // should not happen!
+    if (fat_body < 0) fat_body = 0.f; // should not happen!
   }
 
   void set_params(const ind_param& p,
@@ -103,12 +110,12 @@ public:
 
   void reduce_crop(float amount) {
     crop -= amount;
-    if (crop < 0.0) crop = 0.0;
+    if (crop < 0.f) crop = 0.f;
   }
 
   void eat_crop(float max_fat_body) {
     fat_body += crop;
-    crop = 0.0;
+    crop = 0.f;
     if (fat_body > max_fat_body) fat_body = max_fat_body;
   }
 
@@ -125,7 +132,7 @@ public:
       fat_body = max_fat_body;
     } else {
       fat_body += food * conversion_rate;
-      food = 0.0; // all the shared food is gone
+      food = 0.f; // all the shared food is gone
     }
 
     current_task = food_handling;
@@ -153,6 +160,7 @@ public:
 
 
   void update_tasks(float t) {
+    assert(t >= previous_t);
     previous_t = t;
 
     auto focal_task = current_task;
@@ -229,6 +237,11 @@ public:
   }
   void set_previous_t(float t) {previous_t = t;}
   void set_current_task(task new_task) {current_task = new_task;}
+
+  bool operator==(int other_id) {
+    if (ID == other_id) return true;
+    return false;
+  }
 };
 
 
