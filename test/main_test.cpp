@@ -47,4 +47,26 @@ TEST_CASE("TEST individual") {
   CHECK(new_food == 0.0f); // remaining food is discarded
   CHECK(test_indiv.get_fat_body() == 1.5f);
   CHECK(test_indiv.get_next_t() == 2.5f);
+
+
+  test_indiv.set_fat_body(100.f);
+  test_indiv.decide_new_task(0.f,
+                             rndgen,
+                             1.f);
+  CHECK(test_indiv.get_task() == nurse);
+  CHECK(test_indiv.get_next_t() > 1.f);
+
+  test_indiv.set_fat_body(0.f);
+  test_indiv.decide_new_task(0.f,
+                             rndgen,
+                             1.f);
+  CHECK(test_indiv.get_task() == forage);
+  CHECK(test_indiv.get_next_t() == 1.f);
+
+  test_indiv.update_tasks(1.f);
+  CHECK(test_indiv.get_previous_t() == 1.f);
+  auto temp_data = test_indiv.get_data().back();
+  CHECK(std::get<0>(temp_data) == 1.f);
+  CHECK(std::get<1>(temp_data) == test_indiv.get_task());
+
 }
