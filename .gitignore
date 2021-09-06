@@ -27,3 +27,4 @@ dol_test/Build/Products/Debug/dol_test
 *.pbxproj
 *.xcworkspacedata
 *.xcuserstate
+*.tmp
