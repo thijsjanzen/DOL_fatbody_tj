@@ -15,6 +15,31 @@ TEST_CASE("TEST simulation") {
   Simulation test_sim(params);
 
   CHECK(test_sim.colony.size() == params.get_meta_param().colony_size);
+
+  bool checked = test_sim.check_time_interval(1.f, 2.f, 1.f);
+  REQUIRE(checked == true);
+  checked = test_sim.check_time_interval(1.f, 2.f, 0.5f);
+  REQUIRE(checked == false);
+
+  test_sim.remove_from_nurses(10);
+  REQUIRE(test_sim.nurses.size() == params.get_meta_param().colony_size - 1);
+  REQUIRE(test_sim.nurses[10] == 99); // swapped
+
+  float dom = test_sim.dominance_interaction(1.f, 2.f);
+  REQUIRE(dom < 1.f);
+  dom = test_sim.dominance_interaction(1.f, 1.f);
+  REQUIRE(dom == 0.5f); // (1 / (1 + exp(0)) = 1/2
+
+  // update nurse
+  test_sim.colony[0].set_fat_body(1.f);
+  test_sim.update_nurse(&test_sim.colony[0]);
+  CHECK(test_sim.colony[0].get_fat_body() == 1.f);
+  test_sim.t = 1.f;
+  test_sim.update_nurse(&test_sim.colony[0]);
+  CHECK(test_sim.colony[0].get_fat_body() < 1.f);
+
+    
+
 }
 
 

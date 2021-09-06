@@ -71,7 +71,6 @@ struct Simulation {
       colony[i].go_nurse(next_t);
       nurses.push_back(colony[i].get_id());
 
-
       colony[i].update_tasks(t);
       time_queue.push(track_time(&colony[i]));
     }
@@ -270,8 +269,6 @@ struct Simulation {
       }
     }
   }
-
-
 
 
   void run_simulation() {
