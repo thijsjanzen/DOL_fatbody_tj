@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
 
     sim.write_dol_to_file(params_of_interest,
                          sim_par_in.get_meta_param().dol_file_name);
-
+    
     return 0;
   }
   catch (const std::exception& err) {

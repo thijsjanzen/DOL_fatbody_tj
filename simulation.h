@@ -60,7 +60,10 @@ class Compare=std::less<typename Container::value_type>> class custom_priority_q
 
 bool is_in_order(const custom_priority_queue< track_time,
                  std::vector<track_time>, cmp_time >& pq) {
-
+  return true;
+   // uncomment code below to check that the queue is in order
+   // this does slow down the code a lot.
+  /*
   auto pq_copy(pq);
   auto prev = pq_copy.top();
   pq_copy.pop();
@@ -71,7 +74,7 @@ bool is_in_order(const custom_priority_queue< track_time,
     }
     pq_copy.pop();
   }
-  return true;
+  return true;*/
 }
 
 
@@ -109,7 +112,9 @@ struct Simulation {
       colony[i].set_params(p.get_ind_param(), i, rndgen);
 
       double next_t = colony[i].get_next_t_threshold(t, rndgen);
-      if(next_t < 0) next_t = 0.0;
+      if(next_t < 0) {
+        next_t = 0.0;
+      }
       colony[i].go_nurse(next_t);
       nurses.push_back(colony[i].get_id());
 
@@ -308,7 +313,7 @@ struct Simulation {
   }
 
   void add_to_timequeue(individual* focal_individual) {
-    assert(focal_individual->get_next_t() > t);
+    assert(focal_individual->get_next_t() >= t);
     time_queue.push(track_time(focal_individual));
   }
 
