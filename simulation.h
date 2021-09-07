@@ -58,11 +58,13 @@ class Compare=std::less<typename Container::value_type>> class custom_priority_q
       }
 };
 
-bool is_in_order(const custom_priority_queue< track_time,
-                 std::vector<track_time>, cmp_time >& pq) {
-  return true;
-   // uncomment code below to check that the queue is in order
-   // this does slow down the code a lot.
+// uncomment code below to check that the queue is in order
+  // this does slow down the code a lot.
+//bool is_in_order(const custom_priority_queue< track_time,
+//                 std::vector<track_time>, cmp_time >& pq) {
+  // auto x = pq.top();
+  //return true;
+
   /*
   auto pq_copy(pq);
   auto prev = pq_copy.top();
@@ -75,7 +77,7 @@ bool is_in_order(const custom_priority_queue< track_time,
     pq_copy.pop();
   }
   return true;*/
-}
+//}
 
 
 
@@ -186,7 +188,7 @@ struct Simulation {
     auto local_index = std::find(colony.begin(), colony.end(), index);
     size_t cnt = std::distance(colony.begin(), local_index);
     add_to_timequeue(&colony[cnt]);
-    assert(is_in_order(time_queue));
+//    assert(is_in_order(time_queue));
   }
 
   void share_resources(individual* focal_individual) {
@@ -330,10 +332,7 @@ struct Simulation {
 
     double new_t = focal_individual->get_next_t();
 
-    assert(is_in_order(time_queue));
-    if(new_t < t) {
-      int a = 5;
-    }
+   // assert(is_in_order(time_queue));
     assert(new_t >= t);
     t = new_t;
 
@@ -355,7 +354,7 @@ struct Simulation {
     focal_individual->update_tasks(t);
 
     add_to_timequeue(focal_individual);
-    assert(is_in_order(time_queue));
+ //   assert(is_in_order(time_queue));
   }
 
 
