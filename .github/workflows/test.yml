@@ -20,9 +20,9 @@ jobs:
         run: |
           g++ -std=c++14 -o TestProgram -fprofile-arcs -ftest-coverage -fprofile-generate test/main_test.cpp parameters.cpp simulation.cpp
           ./TestProgram
-          gcov -o . test/main_test.cpp parameters.cpp simulation.cpp
+          gcov -o . test/main_test.cpp
       - name: Upload
         uses: codecov/codecov-action@v1
         with:
-          files: simulation.cpp.gcov,parameters.cpp.gcov,simulation.h.gcov,rand_t.h.gcov,parameters.h.gcov,individual.h.gcov
+          files: simulation.h.gcov,rand_t.h.gcov,parameters.h.gcov,individual.h.gcov
           token: ${{ secrets.CODECOV_TOKEN }}
