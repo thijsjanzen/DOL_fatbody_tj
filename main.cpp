@@ -53,8 +53,16 @@ int main(int argc, char* argv[]) {
 
     // the vector params_of_interest can be modified to contain anything you are varying
     // it is then subsequently added to the output file in front of the DoL measures.
-    std::vector< double > params_of_interest = {sim_par_in.get_env_param().foraging_time,
-      sim_par_in.get_env_param().resource_amount};
+    std::vector< double > params_of_interest = {
+      sim_par_in.get_ind_param().food_handling_time,
+sim_par_in.get_ind_param().metabolic_cost_nurses,
+sim_par_in.get_ind_param().metabolic_cost_foragers,
+sim_par_in.get_ind_param().init_fat_body,
+sim_par_in.get_ind_param().max_fat_body,      
+sim_par_in.get_ind_param().crop_size,
+sim_par_in.get_env_param().resource_amount,
+sim_par_in.get_env_param().foraging_time
+};
 
     sim.write_dol_to_file(params_of_interest,
                          sim_par_in.get_meta_param().dol_file_name);
