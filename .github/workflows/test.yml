@@ -22,7 +22,7 @@ jobs:
           sudo apt-get install g++
       - name: Run Tests
         run: |
-          g++ -std=c++14 -o TestProgram -fprofile-arcs -ftest-coverage -fprofile-generate test/main_test.cpp parameters.cpp simulation.cpp
+          g++ -std=c++14 -o TestProgram -fprofile-arcs -ftest-coverage -fprofile-generate test/main_test.cpp
           ./TestProgram
           gcov -o . test/main_test.cpp
       - name: Upload
