@@ -2,9 +2,13 @@ name: test_for_codecov
 
 on:
   push:
-    branches: [ main develop]
+    branches: 
+      - main 
+      - develop
   pull_request:
-    branches: [ main develop]
+    branches: 
+      - main 
+      - develop
 
 jobs:
   test-and-upstream:
@@ -18,7 +22,7 @@ jobs:
           sudo apt-get install g++
       - name: Run Tests
         run: |
-          g++ -std=c++14 -o TestProgram -fprofile-arcs -ftest-coverage -fprofile-generate test/main_test.cpp parameters.cpp simulation.cpp
+          g++ -std=c++14 -o TestProgram -fprofile-arcs -ftest-coverage -fprofile-generate test/main_test.cpp
           ./TestProgram
           gcov -o . test/main_test.cpp
       - name: Upload
