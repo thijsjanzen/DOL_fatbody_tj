@@ -32,7 +32,7 @@ struct track_time {
 };
 
 struct cmp_time {
-  bool operator()(const track_time& a, const track_time& b) {
+  bool operator()(const track_time& a, const track_time& b) const {
     return a.time < b.time;
   }
 };
@@ -40,7 +40,7 @@ struct cmp_time {
 struct find_track_time_by_id {
   int focal_id;
   find_track_time_by_id(int x) : focal_id(x) {}
-  bool operator()(const track_time& tt) {
+  bool operator()(const track_time& tt) const {
     return tt.ind->get_id() == focal_id;
   }
 };
