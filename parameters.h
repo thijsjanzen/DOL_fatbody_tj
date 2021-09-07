@@ -84,6 +84,7 @@ struct params {
   }
 
   std::vector< std::string > split(std::string s) {
+    // code from: https://stackoverflow.com/questions/14265581/parse-split-a-string-in-c-using-string-delimiter-standard-c
     std::vector< std::string > output;
     std::string delimiter = ",";
     size_t pos = 0;
@@ -93,6 +94,7 @@ struct params {
       output.push_back(token);
       s.erase(0, pos + delimiter.length());
     }
+    output.push_back(s); // only last entry now
     return output;
   }
 

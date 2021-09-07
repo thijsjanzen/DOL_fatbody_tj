@@ -8,6 +8,22 @@
 #include <fstream>
 #include <string>
 
+
+TEST_CASE("TEST parameters") {
+
+  // we test here the ability to extract parameters to record
+  params parameters;
+  auto s = "resource_amount,foraging_time";
+  auto vec = parameters.split(s);
+  REQUIRE(vec.size() == 2);
+  CHECK(vec[0] == "resource_amount");
+  CHECK(vec[1] == "foraging_time");
+
+  auto vals = parameters.create_params_to_record(vec);
+  CHECK(vals[0] == parameters.resource_amount);
+  CHECK(vals[1] == parameters.foraging_time);
+}
+
 TEST_CASE("TEST simulation") {
 
   params parameters;
