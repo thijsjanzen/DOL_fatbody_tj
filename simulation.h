@@ -18,6 +18,8 @@
 #include "parameters.h"
 #include "rand_t.h"
 
+#include <set>
+
 struct track_time {
    float time;
    individual* ind;
@@ -26,69 +28,29 @@ struct track_time {
      ind = input;
      time = ind->get_next_t();
    }
-
-  bool operator==(int index) {
-    if (ind->get_id() == index) {
-      return true;
-    }
-    return false;
-  }
 };
 
 struct cmp_time {
   bool operator()(const track_time& a, const track_time& b) {
-    return a.time > b.time;
+    return a.time < b.time;
   }
 };
 
-template<typename T, class Container=std::vector<T>,
-class Compare = std::less<typename Container::value_type> > class custom_priority_queue : public std::priority_queue<T, Container, Compare>
-{
-  public:
-
-      bool remove(int value) {
-        auto it = std::find(this->c.begin(), this->c.end(), value);
-        if (it != this->c.end()) {
-            this->c.erase(it);
-            std::make_heap(this->c.begin(), this->c.end(), this->comp);
-            return true;
-       }
-       else {
-        return false;
-       }
-      }
-};
-
-// uncomment code below to check that the queue is in order
-  // this does slow down the code a lot.
-//bool is_in_order(const custom_priority_queue< track_time,
-//                 std::vector<track_time>, cmp_time >& pq) {
-  // auto x = pq.top();
-  //return true;
-
-  /*
-  auto pq_copy(pq);
-  auto prev = pq_copy.top();
-  pq_copy.pop();
-  while(!pq_copy.empty()) {
-    auto next = pq_copy.top();
-    if (next.time < prev.time) {
-      return false;
-    }
-    pq_copy.pop();
+struct find_track_time_by_id {
+  int focal_id;
+  find_track_time_by_id(int x) : focal_id(x) {}
+  bool operator()(const track_time& tt) {
+    return tt.ind->get_id() == focal_id;
   }
-  return true;*/
-//}
-
-
+};
 
 struct Simulation {
   std::vector< individual > colony;
 
   std::vector<int> nurses;
 
-  custom_priority_queue< track_time,
-                         std::vector<track_time>, cmp_time > time_queue;
+  std::set< track_time, cmp_time > time_queue;
+
 
   rnd_t rndgen;
 
@@ -184,11 +146,12 @@ struct Simulation {
   }
 
   void update_queue(int index) {
-    time_queue.remove(index);
+    auto it = std::find_if(time_queue.begin(), time_queue.end(), find_track_time_by_id(index));
+    time_queue.erase(it);
+
     auto local_index = std::find(colony.begin(), colony.end(), index);
     size_t cnt = std::distance(colony.begin(), local_index);
-    add_to_timequeue(&colony[cnt]);
-//    assert(is_in_order(time_queue));
+   add_to_timequeue(&colony[cnt]);
   }
 
   void share_resources(individual* focal_individual) {
@@ -316,23 +279,25 @@ struct Simulation {
 
   void add_to_timequeue(individual* focal_individual) {
     assert(focal_individual->get_next_t() >= t);
-    time_queue.push(track_time(focal_individual));
+    //time_queue.push(track_time(focal_individual));
+    time_queue.insert(track_time(focal_individual));
   }
 
 
   void update_colony() {
-    auto next_ind = time_queue.top();
-    time_queue.pop();
-    if (next_ind.ind->get_next_t() > next_ind.time) {
-      add_to_timequeue(next_ind.ind);
+   // auto next_ind = time_queue.top();
+    auto next_ind = time_queue.begin();
+    time_queue.erase(next_ind);
+   // time_queue.pop();
+    if (next_ind->ind->get_next_t() > next_ind->time) {
+      add_to_timequeue(next_ind->ind);
       return;
     }
 
-    auto focal_individual = next_ind.ind;
+    auto focal_individual = next_ind->ind;
 
     double new_t = focal_individual->get_next_t();
 
-   // assert(is_in_order(time_queue));
     assert(new_t >= t);
     t = new_t;
 
@@ -354,7 +319,6 @@ struct Simulation {
     focal_individual->update_tasks(t);
 
     add_to_timequeue(focal_individual);
- //   assert(is_in_order(time_queue));
   }
 
 
