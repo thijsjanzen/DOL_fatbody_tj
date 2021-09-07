@@ -10,17 +10,13 @@
 
 TEST_CASE("TEST simulation") {
 
-  ind_param ind;
-  env_param env;
-  meta_param meta;
-  meta.model_type = 1;
-
-  sim_param params(env, ind, meta);
+  params parameters;
+  parameters.model_type = 1;
   rnd_t rndgen(42);
 
-  Simulation test_sim(params);
+  Simulation test_sim(parameters);
 
-  CHECK(test_sim.colony.size() == params.get_meta_param().colony_size);
+  CHECK(test_sim.colony.size() == parameters.colony_size);
 
   bool checked = test_sim.check_time_interval(1.f, 2.f, 1.f);
   CHECK(checked == true);
@@ -32,12 +28,12 @@ TEST_CASE("TEST simulation") {
   test_sim.colony[0].set_current_task(forage);
   test_sim.update_nurse_list(&test_sim.colony[0]);
   // should be removed from nurses now.
-  test_sim.nurses.size() == params.get_meta_param().colony_size - 1;
+  test_sim.nurses.size() == parameters.colony_size - 1;
 
 
   test_sim.colony[10].set_current_task(forage);
   test_sim.remove_from_nurses(10);
-  REQUIRE(test_sim.nurses.size() == params.get_meta_param().colony_size - 2);
+  REQUIRE(test_sim.nurses.size() == parameters.colony_size - 2);
   REQUIRE(test_sim.nurses[10] == 98); // swapped
 
   float dom = test_sim.dominance_interaction(1.f, 2.f);
@@ -59,7 +55,7 @@ TEST_CASE("TEST simulation") {
   size_t num_nurses = test_sim.nurses.size();
   test_sim.share_resources(&test_sim.colony[0]);
   size_t num_nurses_shared = test_sim.nurses.size();
-  CHECK(num_nurses_shared == num_nurses - params.get_meta_param().max_number_interactions);
+  CHECK(num_nurses_shared == num_nurses - parameters.max_number_interactions);
 
   // update forager
   test_sim.colony[0].set_fat_body(1.f);
@@ -87,28 +83,23 @@ TEST_CASE("TEST simulation") {
 }
 
 TEST_CASE("TEST run simulation") {
-  ind_param ind;
-  env_param env;
-  meta_param meta;
-  meta.model_type = 1;
-  meta.simulation_time = 100;
-
-  sim_param params(env, ind, meta);
+  params parameters;
+  parameters.simulation_time = 100;
   rnd_t rndgen(42);
 
-  Simulation test_sim(params);
+  Simulation test_sim(parameters);
 
   test_sim.run_simulation();
-  REQUIRE(test_sim.t >= params.get_meta_param().simulation_time);
+  REQUIRE(test_sim.t >= parameters.simulation_time);
 }
 
 TEST_CASE("TEST freq") {
-  sim_param params;
+  params parameters;
   rnd_t rndgen(42);
   int id = 0;
 
   individual test_indiv;
-  test_indiv.set_params(params.get_ind_param(),
+  test_indiv.set_params(parameters,
                         id, rndgen);
 
   test_indiv.set_current_task(nurse);
@@ -122,18 +113,14 @@ TEST_CASE("TEST freq") {
 }
 
 
-
-
-
-
 TEST_CASE("TEST individual") {
 
-  sim_param params;
+  params parameters;
   rnd_t rndgen(42);
   int id = 0;
 
   individual test_indiv;
-  test_indiv.set_params(params.get_ind_param(),
+  test_indiv.set_params(parameters,
                         id, rndgen);
   test_indiv.new_next_t(5.0);
   REQUIRE(test_indiv.get_next_t() == 5.0);

@@ -17,6 +17,8 @@
 
 struct params {
 
+  params() {};
+
   params(const std::string& file_name) {
     read_parameters_from_ini(file_name);
   }
