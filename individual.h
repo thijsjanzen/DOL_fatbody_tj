@@ -88,7 +88,7 @@ public:
     if (fat_body < 0) fat_body = 0.f; // should not happen!
   }
 
-  void set_params(const ind_param& p,
+  void set_params(const params& p,
                   int id,
                   rnd_t& rndgen) {
     fat_body = p.init_fat_body;

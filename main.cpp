@@ -8,10 +8,9 @@
 
 #include <iostream>
 #include <fstream>
+#include "parameters.h"
 #include "simulation.h"
 #include "individual.h"
-#include "parameters.h"
-#include "json.hpp"
 #include <chrono>
 
 int main(int argc, char* argv[]) {
@@ -21,22 +20,11 @@ int main(int argc, char* argv[]) {
              return 1;
     }
 
-    auto file_name = argv[1];
+    std::string file_name = argv[1];
 
-    std::cout << "reading from JSON file: " << file_name << "\n";
+    std::cout << "reading from config file: " << file_name << "\n";
 
-    nlohmann::json json_in;
-    std::ifstream is(file_name);
-
-    if(!is.is_open()) {
-      std::cerr << "Can not open JSON file\n";
-      return 1;
-    }
-
-    is >> json_in;
-    sim_param sim_par_in = json_in.get<sim_param>();
-
-    std::cout << "JSON file read\n";
+    params sim_par_in(file_name);
 
     Simulation sim(sim_par_in);
 
@@ -47,25 +35,13 @@ int main(int argc, char* argv[]) {
     std::chrono::duration<double> elapsed_seconds = clock_now - clock_start;
     std::cout << "this took: " << elapsed_seconds.count() << "seconds\n";
 
-    if (sim_par_in.get_meta_param().data_interval == 0) {
-      sim.write_ants_to_file(sim_par_in.get_meta_param().output_file_name);
+    if (sim_par_in.data_interval == 0) {
+      sim.write_ants_to_file(sim_par_in.output_file_name);
     }
 
-    // the vector params_of_interest can be modified to contain anything you are varying
-    // it is then subsequently added to the output file in front of the DoL measures.
-    std::vector< double > params_of_interest = {
-      sim_par_in.get_ind_param().food_handling_time,
-sim_par_in.get_ind_param().metabolic_cost_nurses,
-sim_par_in.get_ind_param().metabolic_cost_foragers,
-sim_par_in.get_ind_param().init_fat_body,
-sim_par_in.get_ind_param().max_fat_body,      
-sim_par_in.get_ind_param().crop_size,
-sim_par_in.get_env_param().resource_amount,
-sim_par_in.get_env_param().foraging_time
-};
-
-    sim.write_dol_to_file(params_of_interest,
-                         sim_par_in.get_meta_param().dol_file_name);
+    sim.write_dol_to_file(sim_par_in.param_names_to_record,
+                          sim_par_in.params_to_record,
+                          sim_par_in.dol_file_name);
     
     return 0;
   }

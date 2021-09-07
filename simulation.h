@@ -92,26 +92,26 @@ struct Simulation {
   rnd_t rndgen;
 
   float t;
-  sim_param p;
+  params p;
   int previous_time_recording;
 
   float brood_resources;
 
 
 
-  Simulation(const sim_param& par) : p(par) {
+  Simulation(const params& par) : p(par) {
     rndgen = rnd_t();
-    rndgen.set_threshold_dist(p.get_ind_param().mean_threshold, p.get_ind_param().sd_threshold);
-    colony = std::vector< individual >(p.get_meta_param().colony_size);
+    rndgen.set_threshold_dist(p.mean_threshold, p.sd_threshold);
+    colony = std::vector< individual >(p.colony_size);
 
     t = 0.0;
     previous_time_recording = -1;
 
     brood_resources = 0.0;
 
-    for (int i = 0; i < p.get_meta_param().colony_size; ++i) {
+    for (int i = 0; i < p.colony_size; ++i) {
 
-      colony[i].set_params(p.get_ind_param(), i, rndgen);
+      colony[i].set_params(p, i, rndgen);
 
       double next_t = colony[i].get_next_t_threshold(t, rndgen);
       if(next_t < 0) {
@@ -192,9 +192,9 @@ struct Simulation {
   }
 
   void share_resources(individual* focal_individual) {
-    if (p.get_meta_param().model_type > 0) {
+    if (p.model_type > 0) {
       // in model 0, there is NO sharing
-      size_t num_interactions = std::min( static_cast<size_t>(p.get_meta_param().max_number_interactions),
+      size_t num_interactions = std::min( static_cast<size_t>(p.max_number_interactions),
                                           static_cast<size_t>(nurses.size()));
 
       std::vector< int > visited_nurses(num_interactions);
@@ -210,17 +210,17 @@ struct Simulation {
         int index_other_individual = nurses[i];
 
         float share_amount = 0.f;
-        if (p.get_meta_param().model_type == 1) {
+        if (p.model_type == 1) {
           share_amount = 1.f / num_interactions;
         }
-        if (p.get_meta_param().model_type == 2) {
+        if (p.model_type == 2) {
          // share_amount = dominance_interaction(focal_individual->get_dominance(),
          //                                      colony[index_other_individual].get_dominance());
           if (focal_individual->get_dominance() < colony[index_other_individual].get_dominance()) {
             share_amount = 1.0f;
           }
         }
-        if (p.get_meta_param().model_type == 3) {
+        if (p.model_type == 3) {
           share_amount = dominance_interaction(focal_individual->get_fat_body(),
                                               colony[index_other_individual].get_fat_body());
         }
@@ -228,15 +228,15 @@ struct Simulation {
         float to_share = share_amount * focal_individual->get_crop();
 
         double remainder  = colony[ index_other_individual].handle_food(to_share,
-                                                    p.get_ind_param().proportion_fat_body_nurse,
-                                                    p.get_ind_param().max_fat_body,
+                                                    p.proportion_fat_body_nurse,
+                                                    p.max_fat_body,
                                                     t,
-                                                    p.get_ind_param().food_handling_time);
+                                                    p.food_handling_time);
         visited_nurses[i] = colony[index_other_individual].get_id();
         //remove_from_nurses();
 
         float shared = to_share - remainder;
-        brood_resources += shared * (1.0 - p.get_ind_param().proportion_fat_body_nurse);
+        brood_resources += shared * (1.0 - p.proportion_fat_body_nurse);
 
         focal_individual->reduce_crop(shared);
 
@@ -253,13 +253,13 @@ struct Simulation {
   void update_forager(individual* focal_individual) {
     focal_individual->update_fatbody(t);
 
-    focal_individual->set_crop(p.get_env_param().resource_amount);
-    focal_individual->process_crop(p.get_ind_param().proportion_fat_body_forager,
-                                   p.get_ind_param().max_fat_body);
+    focal_individual->set_crop(p.resource_amount);
+    focal_individual->process_crop(p.proportion_fat_body_forager,
+                                   p.max_fat_body);
 
     share_resources(focal_individual);
     // the remainder in the crop is digested
-    focal_individual->eat_crop(p.get_ind_param().max_fat_body);
+    focal_individual->eat_crop(p.max_fat_body);
 
     return;
   }
@@ -279,7 +279,7 @@ struct Simulation {
 
       focal_individual->decide_new_task(t,
                                        rndgen,
-                                       p.get_env_param().foraging_time);
+                                       p.foraging_time);
     }
     if (focal_individual->get_previous_task() == nurse ||
         focal_individual->get_previous_task() == food_handling) {
@@ -289,11 +289,11 @@ struct Simulation {
 
         // individual is here because he has reached his threshold,
         // and goes foraging
-        focal_individual->go_forage(t, p.get_env_param().foraging_time);
+        focal_individual->go_forage(t, p.foraging_time);
      } else {
         focal_individual->decide_new_task(t,
                                           rndgen,
-                                          p.get_env_param().foraging_time);
+                                          p.foraging_time);
       }
     }
   }
@@ -361,7 +361,7 @@ struct Simulation {
 
   void run_simulation() {
 
-    while(t < p.get_meta_param().simulation_time) {
+    while(t < p.simulation_time) {
       update_colony();
     }
     // end roll call:
@@ -432,7 +432,7 @@ struct Simulation {
     // calculate frequency per individual per task
     auto sum = 0.0;
     for (size_t i = 0; i < colony.size(); ++i) {
-      m[i] = colony[i].calculate_task_frequency(p.get_meta_param().simulation_time);
+      m[i] = colony[i].calculate_task_frequency(p.simulation_time);
       sum += m[i][0] + m[i][1];
     }
 
@@ -488,15 +488,21 @@ struct Simulation {
   }
 
 
-  void write_dol_to_file(const std::vector<double>& params,
+  void write_dol_to_file(const std::vector<std::string>& param_names,
+                         const std::vector< float>& param_values,
                          const std::string& file_name) {
 
     std::cout << "writing dol to: " << file_name << "\n";
 
     std::ofstream out(file_name.c_str());
+    for (auto i : param_names) {
+      out << i << "\t";
+      std::cout << i << "\t";
+    } out << "gautrais\tduarte\tgorelick_tasks\tgorelick_indiv\tgorelick_both\n";
 
-    for (auto i : params) {
-      out << i << " ";
+    // and now we need to write them to file
+    for (auto i : param_values) {
+      out << i << "\t";
       std::cout << i << " ";
     }
 
@@ -509,16 +515,16 @@ struct Simulation {
     std::cout << "Duarte 2012  : " << duarte   << "\n";
     std::cout << "Gorelick 2004: ";
 
-    out << gautrais << " " << duarte << " ";
+    out << gautrais << "\t" << duarte << "\t";
 
 
     double div_tasks = std::get<0>(gorelick_stats);
     std::cout << div_tasks << " ";
-    out << div_tasks << " ";
+    out << div_tasks << "\t";
 
     double div_indiv = std::get<1>(gorelick_stats);
     std::cout << div_indiv << " ";
-    out << div_indiv << " ";
+    out << div_indiv << "\t";
 
     double div_both = std::get<2>(gorelick_stats);
     std::cout << div_both << "\n";
@@ -526,9 +532,6 @@ struct Simulation {
 
     out.close();
   }
-
-
-
 };
 
 #endif /* simulation_h */
