@@ -14,7 +14,7 @@ jobs:
     steps: 
     
     - name: Install GCC
-      uses: egor-tensin/setup-gcc@v1
+      run: sudo apt-get install g++
 
     - uses: actions/checkout@v2
     - name: make
