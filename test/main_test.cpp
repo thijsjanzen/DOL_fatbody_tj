@@ -74,12 +74,20 @@ TEST_CASE("TEST simulation") {
   test_sim.colony[0].set_previous_task();
   test_sim.pick_task(&test_sim.colony[0]);
   CHECK(test_sim.colony[0].get_task() == forage);
+}
 
+TEST_CASE("TEST update colony") {
+
+  params parameters;
+  parameters.simulation_time = 100;
+  rnd_t rndgen(42);
+
+  Simulation test_sim(parameters);
 
   auto temp_t = test_sim.t;
   test_sim.update_colony();
   auto new_t = test_sim.t;
-  REQUIRE(new_t > temp_t);
+  REQUIRE(new_t >= temp_t);
 }
 
 TEST_CASE("TEST run simulation") {
