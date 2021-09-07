@@ -12,6 +12,7 @@
 #include <vector>
 #include <queue>
 #include <tuple>
+#include <cassert>
 
 #include "individual.h"
 #include "parameters.h"
@@ -41,7 +42,7 @@ struct cmp_time {
 };
 
 template<typename T, class Container=std::vector<T>,
-class Compare=std::less<typename Container::value_type>> class custom_priority_queue : public std::priority_queue<T, Container, Compare>
+class Compare = std::less<typename Container::value_type> > class custom_priority_queue : public std::priority_queue<T, Container, Compare>
 {
   public:
 
@@ -109,8 +110,7 @@ struct Simulation {
 
     brood_resources = 0.0;
 
-    for (int i = 0; i < p.colony_size; ++i) {
-
+    for (size_t i = 0; i < p.colony_size; ++i) {
       colony[i].set_params(p, i, rndgen);
 
       double next_t = colony[i].get_next_t_threshold(t, rndgen);

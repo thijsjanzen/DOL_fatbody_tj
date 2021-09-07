@@ -11,6 +11,7 @@
 
 #include "parameters.h"
 #include "rand_t.h"
+#include <cassert>
 
 enum task {nurse, forage, food_handling};
 
