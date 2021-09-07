@@ -13,6 +13,7 @@
 #include <queue>
 #include <tuple>
 #include <cassert>
+#include <algorithm>
 
 #include "individual.h"
 #include "parameters.h"
@@ -147,7 +148,12 @@ struct Simulation {
 
   void update_queue(int index) {
     auto it = std::find_if(time_queue.begin(), time_queue.end(), find_track_time_by_id(index));
-    time_queue.erase(it);
+
+    if (it != time_queue.end()) {
+      time_queue.erase(it);
+    } else {
+      throw(std::runtime_error(std::string("failed to do find_if")));
+    }
 
     auto local_index = std::find(colony.begin(), colony.end(), index);
     size_t cnt = std::distance(colony.begin(), local_index);
