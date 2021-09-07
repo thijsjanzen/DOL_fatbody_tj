@@ -45,12 +45,25 @@ struct find_track_time_by_id {
   }
 };
 
+/*bool is_in_order(const std::multiset< track_time, cmp_time >& tq) {
+  auto prev = tq.begin();
+  for (auto it = tq.begin(); it != tq.end(); ++it) {
+    if (it->time < prev->time) {
+      return false;
+    }
+    if (it->time != it->ind->get_next_t()) {
+      return false;
+    }
+  }
+  return true;
+}*/
+
 struct Simulation {
   std::vector< individual > colony;
 
   std::vector<int> nurses;
 
-  std::set< track_time, cmp_time > time_queue;
+  std::multiset< track_time, cmp_time > time_queue;
 
 
   rnd_t rndgen;
@@ -147,17 +160,16 @@ struct Simulation {
   }
 
   void update_queue(int index) {
+    auto t1 = time_queue.size();
     auto it = std::find_if(time_queue.begin(), time_queue.end(), find_track_time_by_id(index));
 
-    if (it != time_queue.end()) {
-      time_queue.erase(it);
-    } else {
+    if (it == time_queue.end()) {
       throw(std::runtime_error(std::string("failed to do find_if")));
     }
-
-    auto local_index = std::find(colony.begin(), colony.end(), index);
-    size_t cnt = std::distance(colony.begin(), local_index);
-   add_to_timequeue(&colony[cnt]);
+    time_queue.erase(it);
+    add_to_timequeue(&colony[index]);
+    auto t2 = time_queue.size();
+    assert(t1 == t2);
   }
 
   void share_resources(individual* focal_individual) {
@@ -197,10 +209,10 @@ struct Simulation {
         float to_share = share_amount * focal_individual->get_crop();
 
         double remainder  = colony[ index_other_individual].handle_food(to_share,
-                                                    p.proportion_fat_body_nurse,
-                                                    p.max_fat_body,
-                                                    t,
-                                                    p.food_handling_time);
+                                                                        p.proportion_fat_body_nurse,
+                                                                        p.max_fat_body,
+                                                                        t,
+                                                                        p.food_handling_time);
         visited_nurses[i] = colony[index_other_individual].get_id();
         //remove_from_nurses();
 
@@ -208,14 +220,15 @@ struct Simulation {
         brood_resources += shared * (1.0 - p.proportion_fat_body_nurse);
 
         focal_individual->reduce_crop(shared);
-
-        // now we should move colony[ index_other_individual] in the queue
-        update_queue(index_other_individual);
       }
 
+      auto t1 = time_queue.size();
       for (auto nurse_id : visited_nurses) {
         remove_from_nurses(nurse_id);
+        update_queue(nurse_id);
       }
+      auto t2 = time_queue.size();
+      assert(t1 == t2);
     }
   }
 
@@ -285,20 +298,15 @@ struct Simulation {
 
   void add_to_timequeue(individual* focal_individual) {
     assert(focal_individual->get_next_t() >= t);
-    //time_queue.push(track_time(focal_individual));
     time_queue.insert(track_time(focal_individual));
   }
 
 
   void update_colony() {
-   // auto next_ind = time_queue.top();
     auto next_ind = time_queue.begin();
     time_queue.erase(next_ind);
-   // time_queue.pop();
-    if (next_ind->ind->get_next_t() > next_ind->time) {
-      add_to_timequeue(next_ind->ind);
-      return;
-    }
+
+   // assert(is_in_order(time_queue));
 
     auto focal_individual = next_ind->ind;
 
@@ -306,7 +314,6 @@ struct Simulation {
 
     assert(new_t >= t);
     t = new_t;
-
 
     // update focal individual
     focal_individual->set_previous_task();
@@ -333,6 +340,7 @@ struct Simulation {
 
     while(t < p.simulation_time) {
       update_colony();
+      assert(colony.size() == time_queue.size());
     }
     // end roll call:
     for (size_t i = 0; i < colony.size(); ++i) {
