@@ -1,4 +1,4 @@
-CFLAGS = -Wall -Werror -Wextra -std=c++17 -ffast-math -O3
+CFLAGS = -Wall -Werror -Wextra -std=c++14 -ffast-math -O3
 SRC = main.cpp
 
 all: 
