@@ -185,7 +185,4 @@ class ConfigFile {
         }
 };
 
-
-
-
 #endif /* config_params_h */

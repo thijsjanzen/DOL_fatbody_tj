@@ -238,6 +238,7 @@ public:
   }
   void set_previous_t(float t) {previous_t = t;}
   void set_current_task(task new_task) {current_task = new_task;}
+  void set_is_food_handling(bool new_val) {is_food_handling = new_val;}
 
   bool operator==(int other_id) {
     if (ID == other_id) return true;

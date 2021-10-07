@@ -26,22 +26,24 @@ int main(int argc, char* argv[]) {
 
     params sim_par_in(file_name);
 
-    Simulation sim(sim_par_in);
+    for (size_t num_repl = 0; num_repl < sim_par_in.num_replicates; ++num_repl) {
+        Simulation sim(sim_par_in);
 
+        auto clock_start = std::chrono::system_clock::now();
+        sim.run_simulation();
+        auto clock_now = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_seconds = clock_now - clock_start;
+        std::cout << "this took: " << elapsed_seconds.count() << "seconds\n";
 
-    auto clock_start = std::chrono::system_clock::now();
-    sim.run_simulation();
-    auto clock_now = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds = clock_now - clock_start;
-    std::cout << "this took: " << elapsed_seconds.count() << "seconds\n";
+        if (sim_par_in.data_interval == 0) {
+          sim.write_ants_to_file(sim_par_in.output_file_name, num_repl);
+        }
 
-    if (sim_par_in.data_interval == 0) {
-      sim.write_ants_to_file(sim_par_in.output_file_name);
+        sim.write_dol_to_file(sim_par_in.param_names_to_record,
+                              sim_par_in.params_to_record,
+                              sim_par_in.dol_file_name,
+                              num_repl);
     }
-
-    sim.write_dol_to_file(sim_par_in.param_names_to_record,
-                          sim_par_in.params_to_record,
-                          sim_par_in.dol_file_name);
     
     return 0;
   }

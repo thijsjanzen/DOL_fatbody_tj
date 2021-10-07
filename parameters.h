@@ -34,21 +34,25 @@ struct params {
 
   size_t max_number_interactions = 3; // max number of interactions with nurses at foraging return
 
-  float metabolic_cost_nurses = 0.5;
-  float metabolic_cost_foragers = 0.5;
-  float max_fat_body = 12.0; // new individuals have a fat body that has this size at maximum
-  float init_fat_body = 10.0;
-  float crop_size = 5.0; // maximal resources that can be carried in crop
-  float proportion_fat_body_forager = 0.2; // proportion of resources allocated to the fatbody by foragers
-  float proportion_fat_body_nurse   = 0.2;  // proportion of resources allocated to the fatbody by nurses
-  float mean_dominance = 5.0;
-  float sd_dominance = 2.0;
-  float mean_threshold = 5.0;
-  float sd_threshold = 1.7;
-  float food_handling_time = 0.5;
+  float metabolic_cost_nurses = 0.5f;
+  float metabolic_cost_foragers = 0.5f;
+  float max_fat_body = 12.0f; // new individuals have a fat body that has this size at maximum
+  float init_fat_body = 10.0f;
+  float crop_size = 5.0f; // maximal resources that can be carried in crop
+  float proportion_fat_body_forager = 0.2f; // proportion of resources allocated to the fatbody by foragers
+  float proportion_fat_body_nurse   = 0.2f;  // proportion of resources allocated to the fatbody by nurses
+  float mean_dominance = 5.0f;
+  float sd_dominance = 2.0f;
+  float mean_threshold = 5.0f;
+  float sd_threshold = 1.7f;
+  float food_handling_time = 0.5f;
 
-  float resource_amount = 1.0;
-  float foraging_time = 5.0;
+  float forager_sharing_at_default = 0.f;
+ 
+  float resource_amount = 1.0f;
+  float foraging_time = 5.0f;
+
+  size_t num_replicates = 10;
 
   std::string temp_params_to_record;
   std::vector < std::string > param_names_to_record;
@@ -78,9 +82,11 @@ struct params {
     food_handling_time            = from_config.getValueOfKey<float>("food_handling_time");
     resource_amount               = from_config.getValueOfKey<float>("resource_amount");
     foraging_time                 = from_config.getValueOfKey<float>("foraging_time");
+    num_replicates                = from_config.getValueOfKey<size_t>("num_replicates");
     temp_params_to_record         = from_config.getValueOfKey<std::string>("params_to_record");
     param_names_to_record         = split(temp_params_to_record);
     params_to_record              = create_params_to_record(param_names_to_record);
+    forager_sharing_at_default    = from_config.getValueOfKey<float>("forager_sharing_at_default");
   }
 
   std::vector< std::string > split(std::string s) {
@@ -126,6 +132,7 @@ struct params {
     if (s == "food_handling_time")          return food_handling_time;
     if (s == "resource_amount")             return resource_amount;
     if (s == "foraging_time")               return foraging_time;
+    if (s == "forager_sharing_at_default")  return forager_sharing_at_default;
 
     throw std::runtime_error("can not find parameter");
     return -1.f; // FAIL

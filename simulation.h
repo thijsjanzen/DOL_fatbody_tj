@@ -65,7 +65,6 @@ struct Simulation {
 
   std::multiset< track_time, cmp_time > time_queue;
 
-
   rnd_t rndgen;
 
   float t;
@@ -73,7 +72,6 @@ struct Simulation {
   int previous_time_recording;
 
   float brood_resources;
-
 
 
   Simulation(const params& par) : p(par) {
@@ -173,7 +171,7 @@ struct Simulation {
   }
 
   void share_resources(individual* focal_individual) {
-    if (p.model_type > 0) {
+    if (p.model_type > 0 || p.forager_sharing_at_default > 0.f) {
       // in model 0, there is NO sharing
       size_t num_interactions = std::min( static_cast<size_t>(p.max_number_interactions),
                                           static_cast<size_t>(nurses.size()));
@@ -190,7 +188,7 @@ struct Simulation {
 
         int index_other_individual = nurses[i];
 
-        float share_amount = 0.f;
+        float share_amount = p.forager_sharing_at_default;
         if (p.model_type == 1) {
           share_amount = 1.f / num_interactions;
         }
@@ -208,11 +206,11 @@ struct Simulation {
 
         float to_share = share_amount * focal_individual->get_crop();
 
-        double remainder  = colony[ index_other_individual].handle_food(to_share,
-                                                                        p.proportion_fat_body_nurse,
-                                                                        p.max_fat_body,
-                                                                        t,
-                                                                        p.food_handling_time);
+        double remainder  = colony[index_other_individual].handle_food(to_share,
+                                                                       p.proportion_fat_body_nurse,
+                                                                       p.max_fat_body,
+                                                                       t,
+                                                                       p.food_handling_time);
         visited_nurses[i] = colony[index_other_individual].get_id();
         //remove_from_nurses();
 
@@ -252,7 +250,6 @@ struct Simulation {
   }
 
   void pick_task(individual* focal_individual) {
-
     if (focal_individual->get_previous_task() == forage) {
       // individual has returned from foraging
       // now has to decide if he goes foraging again.
@@ -348,17 +345,18 @@ struct Simulation {
     }
   }
 
-  void write_ants_to_file(std::string file_name) {
+  void write_ants_to_file(std::string file_name,
+                          size_t num_repl) {
     std::ofstream out(file_name.c_str());
 
     std::cout << "writing output to: " << file_name << "\n";
 
-    out << "ID" << "\t" << "time" << "\t" << "task" << "\t" << "fat_body" << "\n";
+    out << "replicate" << "\t" << "ID" << "\t" << "time" << "\t" << "task" << "\t" << "fat_body" << "\n";
 
     int cnt = 0;
     for (const auto& i : colony) {
       for (auto j : i.get_data()) {
-        out << i.get_id() << "\t" << std::get<0>(j) << "\t"
+        out << num_repl << "\t" << i.get_id() << "\t" << std::get<0>(j) << "\t"
             << std::get<1>(j) << "\t" << std::get<2>(j) << "\n"; // t, task, fat_body
       }
       cnt++;
@@ -372,7 +370,6 @@ struct Simulation {
     int cnt = 0;
     for (const auto& i : colony) {
       double c = i.calc_freq_switches();
-
       f_values[cnt] = 1 - 2 * c;
       cnt++;
     }
@@ -468,17 +465,26 @@ struct Simulation {
 
   void write_dol_to_file(const std::vector<std::string>& param_names,
                          const std::vector< float>& param_values,
-                         const std::string& file_name) {
+                         const std::string& file_name,
+                         size_t num_repl) {
 
     std::cout << "writing dol to: " << file_name << "\n";
+    std::ofstream out;
 
-    std::ofstream out(file_name.c_str());
-    for (auto i : param_names) {
-      out << i << "\t";
-      std::cout << i << "\t";
-    } out << "gautrais\tduarte\tgorelick_tasks\tgorelick_indiv\tgorelick_both\n";
+    if (num_repl == 0) {
+      out.open(file_name.c_str());
 
-    // and now we need to write them to file
+      // create header:
+      for (auto i : param_names) {
+        out << i << "\t";
+        std::cout << i << "\t";
+      } out << "gautrais\tduarte\tgorelick_tasks\tgorelick_indiv\tgorelick_both\n";
+    } else {
+      // append
+      out.open(file_name.c_str(), std::ios::app);
+    }
+
+    // write parameter values to file
     for (auto i : param_values) {
       out << i << "\t";
       std::cout << i << " ";
