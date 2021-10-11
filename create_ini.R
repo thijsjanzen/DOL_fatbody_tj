@@ -20,6 +20,7 @@ create_config <- function(config_file_name = "config.ini",
                           model_type = 3,
                           dol_file_name = "dol.txt",
                           output_file_name = "output.txt",
+                          forager_sharing_at_default = 0.0,
                           params_to_record = "food_handling_time,metabolic_cost_nurses,metabolic_cost_foragers,init_fat_body,max_fat_body,crop_size,resource_amount,foraging_time") {
 
   newini <- list()
@@ -39,7 +40,8 @@ create_config <- function(config_file_name = "config.ini",
          "sd_dominance" = sd_dominance,
          "mean_threshold" = mean_threshold,
          "sd_threshold" = sd_threshold,
-         "food_handling_time" = food_handling_time)
+         "food_handling_time" = food_handling_time,
+         "forager_sharing_at_default" = forager_sharing_at_default)
 
   newini[["meta_param"]] <-
     list("simulation_time" = simulation_time,
