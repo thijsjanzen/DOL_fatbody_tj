@@ -23,8 +23,22 @@ int main(int argc, char* argv[]) {
     std::string file_name = argv[1];
 
     std::cout << "reading from config file: " << file_name << "\n";
+    std::ifstream test_file(file_name.c_str());
+    if (!test_file.is_open()) {
+      std::cerr << "ERROR! could not read ini file\n";
+      std::cerr << "Did you provide a file name as command line argument?";
+      return 1;
+    }
+    test_file.close();
 
     params sim_par_in(file_name);
+
+    // create fake simulation object to write dol header.
+    // This should be streamlined better.
+    // TODO: move writing functions outside simulation object.
+    Simulation sim_fake(sim_par_in);
+    sim_fake.write_dol_header(sim_par_in.param_names_to_record,
+                              sim_par_in.dol_file_name);
 
     for (size_t num_repl = 0; num_repl < sim_par_in.num_replicates; ++num_repl) {
         Simulation sim(sim_par_in);
@@ -44,7 +58,9 @@ int main(int argc, char* argv[]) {
                               sim_par_in.dol_file_name,
                               num_repl);
     }
-    
+  }
+
+
     return 0;
   }
   catch (const std::exception& err) {

@@ -462,6 +462,17 @@ struct Simulation {
     return std::make_tuple(div_into_tasks, div_across_indivs, sim_div);
   }
 
+  void write_dol_header(const std::vector<std::string>& param_names,
+                        const std::string& file_name) {
+
+    std::ofstream out(file_name.c_str());
+    for (auto i : param_names) {
+      out << i << "\t";
+      std::cout << i << "\t";
+    } out << "gautrais\tduarte\tgorelick_tasks\tgorelick_indiv\tgorelick_both\n";
+    out.close();
+  }
+
 
   void write_dol_to_file(const std::vector<std::string>& param_names,
                          const std::vector< float>& param_values,
@@ -469,20 +480,7 @@ struct Simulation {
                          size_t num_repl) {
 
     std::cout << "writing dol to: " << file_name << "\n";
-    std::ofstream out;
-
-    if (num_repl == 0) {
-      out.open(file_name.c_str());
-
-      // create header:
-      for (auto i : param_names) {
-        out << i << "\t";
-        std::cout << i << "\t";
-      } out << "gautrais\tduarte\tgorelick_tasks\tgorelick_indiv\tgorelick_both\n";
-    } else {
-      // append
-      out.open(file_name.c_str(), std::ios::app);
-    }
+    std::ofstream out(file_name.c_str(), std::ios::app);
 
     // write parameter values to file
     for (auto i : param_values) {
