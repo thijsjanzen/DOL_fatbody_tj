@@ -57,7 +57,6 @@ int main(int argc, char* argv[]) {
         }
 
         output::write_dol_to_file(sim.colony,
-                                  sim_par_in.param_names_to_record,
                                   sim_par_in.params_to_record,
                                   sim_par_in.dol_file_name,
                                   num_repl,

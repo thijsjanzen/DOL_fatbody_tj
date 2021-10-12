@@ -61,12 +61,12 @@ create_config <- function(config_file_name = "config.ini",
          "window_step_size" = window_step_size,
          "dol_file_name" = dol_file_name,
          "output_file_name" = output_file_name,
-         "window_file_name"= window_file_name,
+         "window_file_name" = window_file_name,
          "params_to_record" = params_to_record)
 
   ini::write.ini(newini, config_file_name)
 }
 
-create_config(config_file_name = "test.ini")
+# create_config(config_file_name = "test.ini")
 
 

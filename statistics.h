@@ -114,18 +114,19 @@ namespace stats {
 
 namespace output {
 
-  void write_dol_to_file(const std::vector< individual>& colony,
-                         const std::vector<std::string>& param_names,
-                         const std::vector< float>& param_values,
-                         const std::string& file_name,
-                         size_t num_repl,
-                         float burnin,
-                         float total_time) {
+   void write_dol_to_file(const std::vector< individual>& colony,
+                          const std::vector< float>& param_values,
+                          const std::string& file_name,
+                          size_t num_repl,
+                          float burnin,
+                          float total_time) {
 
     std::cout << "writing dol to: " << file_name << "\n";
     std::ofstream out(file_name.c_str(), std::ios::app);
 
+
     // write parameter values to file
+    out << num_repl << "\t";
     for (auto i : param_values) {
       out << i << "\t";
       std::cout << i << " ";
@@ -168,6 +169,7 @@ namespace output {
                          size_t data_interval) {
 
     std::ofstream out(file_name.c_str());
+    out << "repl\t";
     for (auto i : param_names) {
       out << i << "\t";
       std::cout << i << "\t";
