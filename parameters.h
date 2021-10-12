@@ -25,6 +25,7 @@ struct params {
 
   std::string dol_file_name = "dol_default.txt";
   std::string output_file_name = "output_default.txt";
+  std::string window_file_name = "window_default.txt";
 
   size_t simulation_time = 10000; // length of simulation
   int data_interval = 1; // data is written simulationTime / dataInterval times
@@ -54,6 +55,10 @@ struct params {
 
   size_t num_replicates = 10;
 
+  float burnin = 0.1f;
+  float window_size = 100.f; // used for sliding window recording of DoL stats. Only used when data_interval = 0.
+  float window_step_size =  1.f;
+
   std::string temp_params_to_record;
   std::vector < std::string > param_names_to_record;
   std::vector < float > params_to_record;
@@ -63,6 +68,7 @@ struct params {
 
     dol_file_name                 = from_config.getValueOfKey<std::string>("dol_file_name");
     output_file_name              = from_config.getValueOfKey<std::string>("output_file_name");
+    window_file_name              = from_config.getValueOfKey<std::string>("window_file_name");
     simulation_time               = from_config.getValueOfKey<size_t>("simulation_time");
     data_interval                 = from_config.getValueOfKey<int>("data_interval");
     colony_size                   = from_config.getValueOfKey<size_t>("colony_size");
@@ -87,6 +93,9 @@ struct params {
     param_names_to_record         = split(temp_params_to_record);
     params_to_record              = create_params_to_record(param_names_to_record);
     forager_sharing_at_default    = from_config.getValueOfKey<float>("forager_sharing_at_default");
+    burnin                        = from_config.getValueOfKey<float>("burnin");
+    window_size                   = from_config.getValueOfKey<float>("window_size");
+    window_step_size              = from_config.getValueOfKey<float>("window_step_size");
   }
 
   std::vector< std::string > split(std::string s) {
@@ -133,6 +142,8 @@ struct params {
     if (s == "resource_amount")             return resource_amount;
     if (s == "foraging_time")               return foraging_time;
     if (s == "forager_sharing_at_default")  return forager_sharing_at_default;
+    if (s == "burnin")                      return burnin;
+    if (s == "num_replicates")              return num_replicates;
 
     throw std::runtime_error("can not find parameter");
     return -1.f; // FAIL

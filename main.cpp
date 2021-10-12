@@ -11,6 +11,7 @@
 #include "parameters.h"
 #include "simulation.h"
 #include "individual.h"
+#include "statistics.h"
 #include <chrono>
 
 int main(int argc, char* argv[]) {
@@ -25,42 +26,49 @@ int main(int argc, char* argv[]) {
     std::cout << "reading from config file: " << file_name << "\n";
     std::ifstream test_file(file_name.c_str());
     if (!test_file.is_open()) {
-      std::cerr << "ERROR! could not read ini file\n";
-      std::cerr << "Did you provide a file name as command line argument?";
-      return 1;
+      throw std::runtime_error("can't find config file");
     }
     test_file.close();
 
     params sim_par_in(file_name);
 
-    // create fake simulation object to write dol header.
-    // This should be streamlined better.
-    // TODO: move writing functions outside simulation object.
-    Simulation sim_fake(sim_par_in);
-    sim_fake.write_dol_header(sim_par_in.param_names_to_record,
-                              sim_par_in.dol_file_name);
+    output::write_dol_headers(sim_par_in.param_names_to_record,
+                              sim_par_in.dol_file_name,
+                              sim_par_in.window_file_name,
+                              sim_par_in.data_interval);
 
     for (size_t num_repl = 0; num_repl < sim_par_in.num_replicates; ++num_repl) {
         Simulation sim(sim_par_in);
 
         auto clock_start = std::chrono::system_clock::now();
         sim.run_simulation();
-        auto clock_now = std::chrono::system_clock::now();
-        std::chrono::duration<double> elapsed_seconds = clock_now - clock_start;
-        std::cout << "this took: " << elapsed_seconds.count() << "seconds\n";
+
 
         if (sim_par_in.data_interval == 0) {
-          sim.write_ants_to_file(sim_par_in.output_file_name, num_repl);
+          output::write_ants_to_file(sim.colony,
+                                     sim_par_in.output_file_name, num_repl);
+          
+          output::write_dol_sliding_window(sim.colony,
+                                           sim_par_in.window_size,
+                                           sim_par_in.window_step_size,
+                                           sim_par_in.simulation_time,
+                                           sim_par_in.window_file_name,
+                                           num_repl);
         }
 
-        sim.write_dol_to_file(sim_par_in.param_names_to_record,
-                              sim_par_in.params_to_record,
-                              sim_par_in.dol_file_name,
-                              num_repl);
+        output::write_dol_to_file(sim.colony,
+                                  sim_par_in.param_names_to_record,
+                                  sim_par_in.params_to_record,
+                                  sim_par_in.dol_file_name,
+                                  num_repl,
+                                  sim_par_in.burnin,
+                                  sim_par_in.simulation_time);
+
+      auto clock_now = std::chrono::system_clock::now();
+      std::chrono::duration<double> elapsed_seconds = clock_now - clock_start;
+      std::cout << "this took: " << elapsed_seconds.count() << "seconds\n";
     }
-  }
-
-
+    
     return 0;
   }
   catch (const std::exception& err) {

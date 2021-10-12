@@ -21,7 +21,11 @@ create_config <- function(config_file_name = "config.ini",
                           num_replicates = 10,
                           dol_file_name = "dol.txt",
                           output_file_name = "output.txt",
+                          window_file_name = "window.txt",
                           forager_sharing_at_default = 0.0,
+                          burnin = 0.1,
+                          window_size = window_size,
+                          window_step_size = window_step_size,
                           params_to_record = "food_handling_time,metabolic_cost_nurses,metabolic_cost_foragers,init_fat_body,max_fat_body,crop_size,resource_amount,foraging_time") {
 
   newini <- list()
@@ -50,12 +54,14 @@ create_config <- function(config_file_name = "config.ini",
          "colony_size" = colony_size,
          "num_replicates" = num_replicates,
          "max_number_interactions" = max_number_interactions,
-
+         "burnin" = burnin,
          "model_type" = model_type,       # 0 = no sharing, 1 = random sharing,
          # 2 = dominance sharing, 3 = evolving dominance
-
+         "window_size" = window_size,
+         "window_step_size" = window_step_size,
          "dol_file_name" = dol_file_name,
          "output_file_name" = output_file_name,
+         "window_file_name"= window_file_name,
          "params_to_record" = params_to_record)
 
   ini::write.ini(newini, config_file_name)

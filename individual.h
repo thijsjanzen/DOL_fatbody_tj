@@ -170,27 +170,33 @@ public:
     data.push_back( std::make_tuple(t, focal_task, fat_body));
   }
 
-  double calc_freq_switches() const {
+  double calc_freq_switches(float min_t, float max_t) const {
     if (data.size() <= 1) {
       return 0.0;
     }
 
     int cnt = 0;
+    int checked_time_points = 0;
     for (size_t i = 1; i < data.size(); ++i) {
-      auto task1 = std::get<1>(data[i]);
-      auto task2 = std::get<1>(data[i - 1]);
 
+      auto t1 = std::get<0>(data[i - 1]);
+      auto t2 = std::get<0>(data[i]);
+      if (t1 >= min_t && t2 <= max_t) {
+        checked_time_points++;
+        auto task1 = std::get<1>(data[i]);
+        auto task2 = std::get<1>(data[i - 1]);
 
-      if (task1 != task2) {
-        cnt++;
+        if (task1 != task2) {
+          cnt++;
+        }
       }
     }
-    double freq_switches = cnt * 1.0 / (data.size() - 1);
 
-    return freq_switches;
+    return cnt * 1.0 / checked_time_points;;
   }
 
-  double count_p(size_t& num_switches) const {
+  double count_p(float min_t, float max_t,
+                 size_t& num_switches) const {
     if (data.size() <= 1) {
       num_switches += 1;
       return 0.0;
@@ -198,24 +204,33 @@ public:
 
     int cnt = 0;
     for (const auto& i : data) {
-      if (std::get<1>(i) == 0) cnt++;
-      num_switches++;
+      auto t = std::get<0>(i);
+      if (t >= min_t && t <= max_t) {
+        if (std::get<1>(i) == 0) cnt++;
+        num_switches++;
+      }
     }
     return cnt;
   }
 
-  std::vector<double> calculate_task_frequency(double total_runtime) {
-    std::vector<double> task_freq(3, 0.0);
+  std::vector<float> calculate_task_frequency(float min_t, float max_t) const {
+    std::vector<float> task_freq(3, 0.0);
 
     for (size_t i = 0; i < data.size(); ++i) {
+
       float start_t = std::get<0>(data[i]);
-      float end_t = total_runtime;
+      float end_t = max_t;
       if (i + 1 < data.size()) {
         end_t = std::get<0>(data[i + 1]);
       }
-      
-      double dt = end_t - start_t;
-      task_freq[ std::get<1>(data[i]) ] += dt;
+
+      if (start_t >= min_t && end_t <= max_t &&
+          start_t <= max_t && end_t >= min_t) {
+        float dt = end_t - start_t;
+        size_t index = std::get<1>(data[i]);
+        assert(dt >= 0.f);
+        task_freq[ index ] += dt;
+      }
     }
     return task_freq;
   }
