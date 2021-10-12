@@ -30,7 +30,7 @@ struct params {
   int data_interval = 1; // data is written simulationTime / dataInterval times
   size_t colony_size = 100; // number of individuals per colony
 
-  size_t model_type = 3; // 0 = no sharing, 1 = random sharing, 2 = dominance sharing, 3 = evolving dominance
+  size_t model_type = 3; // 0 = no sharing, 1 = random sharing, 2 = dominance sharing, 3 = changing dominance
 
   size_t max_number_interactions = 3; // max number of interactions with nurses at foraging return
 
@@ -139,9 +139,5 @@ struct params {
   }
 
 };
-
-
-
-
 
 #endif /* parameters_h */
