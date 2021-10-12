@@ -132,7 +132,7 @@ TEST_CASE("TEST freq") {
   test_indiv.set_current_task(forage);
   test_indiv.update_tasks(2.f);
 
-  float freq_s = test_indiv.calc_freq_switches();
+  float freq_s = test_indiv.calc_freq_switches(0.f, parameters.simulation_time);
   CHECK(freq_s == 1.f); // switches all the way!
 }
 
