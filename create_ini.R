@@ -26,7 +26,7 @@ create_config <- function(config_file_name = "config.ini",
                           burnin = 0.1,
                           window_size = 100,
                           window_step_size = 10,
-                          params_to_record = "food_handling_time,metabolic_cost_nurses,metabolic_cost_foragers,init_fat_body,max_fat_body,crop_size,resource_amount,foraging_time") {
+                          params_to_record = "food_handling_time,metabolic_cost_nurses,metabolic_cost_foragers,init_fat_body,max_fat_body,max_crop_size,resource_amount,foraging_time") {
 
   newini <- list()
   newini[["env_param"]] <-
