@@ -19,7 +19,6 @@ struct individual {
 private:
   float fat_body;
   float crop;
-  float max_crop_size;
   float previous_t;
   float next_t;
   float dominance;
@@ -52,7 +51,7 @@ public:
   double get_next_t_threshold(float t, rnd_t& rndgen) {
     threshold = rndgen.threshold_normal();
     double dt = (fat_body - threshold) / metabolic_rate[ nurse ];
- 
+
     return(t + dt);
   }
 
@@ -97,11 +96,10 @@ public:
     metabolic_rate = std::vector<float>{p.metabolic_cost_nurses,
                                       p.metabolic_cost_foragers};
     ID = id;
-    max_crop_size = p.crop_size;
     dominance = rndgen.normal(p.mean_dominance, p.sd_dominance);
   }
 
-  void process_crop(float fraction, float max_fat_body) {
+  void process_crop_forager(float fraction, float max_fat_body) {
     float processed = crop * fraction;
 
     fat_body += processed;
@@ -109,31 +107,43 @@ public:
     if (fat_body > max_fat_body) fat_body = max_fat_body;
   }
 
+  void process_crop_nurse(float fraction,
+                          float max_fat_body,
+                          float& brood_resources) {
+    float processed = crop * fraction;
+    if (fat_body + processed < max_fat_body) {
+      fat_body += processed;
+      crop -= processed;
+      brood_resources += crop;
+      crop = 0.f;
+    } else {
+      processed = max_fat_body - fat_body;
+
+      fat_body += processed;
+      crop -= processed;
+      brood_resources += crop;
+      crop = 0.f;
+    }
+  }
+
   void reduce_crop(float amount) {
     crop -= amount;
     if (crop < 0.f) crop = 0.f;
   }
 
-  void eat_crop(float max_fat_body) {
-    fat_body += crop;
-    crop = 0.f;
-    if (fat_body > max_fat_body) fat_body = max_fat_body;
-  }
+  double handle_food(float food, // amount shared by the forager to the nurse
+                     float max_crop_size,
+                     float t,
+                     float handling_time) {
 
-  double handle_food(float food,
-                    float conversion_rate,
-                    float max_fat_body,
-                    float t,
-                    float handling_time) {
-    if ((fat_body + (food * conversion_rate)) > max_fat_body) {
-
-      float uptake = (max_fat_body - fat_body) / conversion_rate;
-
-      food -= uptake;
-      fat_body = max_fat_body;
+    // code below can be shorter, but now shows better the decision tree.
+    if (crop + food < max_crop_size) {
+      crop += food;
+      food -= food;
     } else {
-      fat_body += food * conversion_rate;
-      food = 0.f; // all the shared food is gone
+      float food_received = max_crop_size - crop;
+      crop += food_received;
+      food -= food_received;
     }
 
     current_task = food_handling;
@@ -148,6 +158,8 @@ public:
                       float foraging_time) {
     is_food_handling = false;
     double new_t = get_next_t_threshold(t, rndgen);
+
+
 
     // if new_t is in the future: go nursing
     // otherwise, go foraging
@@ -214,7 +226,7 @@ public:
   }
 
   std::vector<float> calculate_task_frequency(float min_t, float max_t) const {
-    std::vector<float> task_freq(3, 0.0);
+    std::vector<float> task_freq(2, 0.0);
 
     for (size_t i = 0; i < data.size(); ++i) {
 

@@ -205,18 +205,18 @@ struct Simulation {
 
         float to_share = share_amount * focal_individual->get_crop();
 
-        double remainder  = colony[index_other_individual].handle_food(to_share,
-                                                                       p.proportion_fat_body_nurse,
-                                                                       p.max_fat_body,
-                                                                       t,
-                                                                       p.food_handling_time);
+        float food_remaining = colony[index_other_individual].handle_food(to_share,
+                                                                          p.max_crop_size,
+                                                                          t,
+                                                                          p.food_handling_time);
+
+        colony[index_other_individual].process_crop_nurse(p.proportion_fat_body_nurse,
+                                                          p.max_fat_body,
+                                                          brood_resources);
+
         visited_nurses[i] = colony[index_other_individual].get_id();
-        //remove_from_nurses();
 
-        float shared = to_share - remainder;
-        brood_resources += shared * (1.0 - p.proportion_fat_body_nurse);
-
-        focal_individual->reduce_crop(shared);
+        focal_individual->reduce_crop(to_share - food_remaining);
       }
 
       auto t1 = time_queue.size();
@@ -233,12 +233,13 @@ struct Simulation {
     focal_individual->update_fatbody(t);
 
     focal_individual->set_crop(p.resource_amount);
-    focal_individual->process_crop(p.proportion_fat_body_forager,
-                                   p.max_fat_body);
+    focal_individual->process_crop_forager(p.proportion_fat_body_forager,
+                                           p.max_fat_body);
 
     share_resources(focal_individual);
-    // the remainder in the crop is digested
-    focal_individual->eat_crop(p.max_fat_body);
+    // the remainder in the crop is digested entirely.
+    focal_individual->process_crop_forager(1.f,
+                                           p.max_fat_body);
 
     return;
   }
