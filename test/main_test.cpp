@@ -151,7 +151,7 @@ TEST_CASE("TEST individual") {
 
   test_indiv.set_fat_body(0.f);
   test_indiv.set_crop(5.f);
-  test_indiv.process_crop(0.5f, 1.f);
+  test_indiv.process_crop_forager(0.5f, 1.f);
   CHECK(test_indiv.get_crop() == 2.5f);
   CHECK(test_indiv.get_fat_body() == 1.f);
 
@@ -163,27 +163,22 @@ TEST_CASE("TEST individual") {
   test_indiv.reduce_crop(0.5f);
   CHECK(test_indiv.get_crop() == 2.f);
 
-  test_indiv.eat_crop(1.f);
-  CHECK(test_indiv.get_crop() == 0.f);
-  CHECK(test_indiv.get_fat_body() == 1.f);
+  test_indiv.reduce_crop(2.f); // crop is now empty!
 
   float new_food = test_indiv.handle_food(1.f, // food
-                         0.5f, // conversion_rate
-                         2.f,  // max_fat_body
-                         2,    // t
-                         0.5); // handling_time
+                                          2.f,  // max_crop_size
+                                          2,    // t
+                                          0.5f); // handling_time
 
   CHECK(new_food == 0.0f); // remaining food is discarded
-  CHECK(test_indiv.get_fat_body() == 1.5f);
   CHECK(test_indiv.get_next_t() == 2.5f);
-
+  CHECK(test_indiv.get_crop() == 1.f);
 
   new_food = test_indiv.handle_food(5.f, // food
-                                    0.5f, // conversion_rate
-                                    2.f,  // max_fat_body
+                                    2.f,  // max_crop_size
                                     2,    // t
-                                    0.5); // handling_time
-  CHECK(test_indiv.get_fat_body() == 2.f);
+                                    0.5f); // handling_time
+  CHECK(test_indiv.get_crop() == 2.f);
   CHECK(new_food == 4.f); // 5 - 2 * 0.5 = 4
 
 
