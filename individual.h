@@ -49,8 +49,10 @@ public:
   }
 
   double get_next_t_threshold(float t, rnd_t& rndgen) {
+    // this function is only used by nurses
     threshold = rndgen.threshold_normal();
-    double dt = (fat_body - threshold) / metabolic_rate[ nurse ];
+
+    double dt = metabolic_rate[ nurse ] == 0.f ? 1e20f : (fat_body - threshold) / metabolic_rate[ nurse ];
 
     return(t + dt);
   }
@@ -158,8 +160,6 @@ public:
                       float foraging_time) {
     is_food_handling = false;
     double new_t = get_next_t_threshold(t, rndgen);
-
-
 
     // if new_t is in the future: go nursing
     // otherwise, go foraging
