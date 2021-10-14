@@ -39,7 +39,7 @@ struct params {
   float metabolic_cost_foragers = 0.5f;
   float max_fat_body = 12.0f; // new individuals have a fat body that has this size at maximum
   float init_fat_body = 10.0f;
-  float crop_size = 5.0f; // maximal resources that can be carried in crop
+  float max_crop_size = 5.0f; // maximal resources that can be carried in crop
   float proportion_fat_body_forager = 0.2f; // proportion of resources allocated to the fatbody by foragers
   float proportion_fat_body_nurse   = 0.2f;  // proportion of resources allocated to the fatbody by nurses
   float mean_dominance = 5.0f;
@@ -78,7 +78,7 @@ struct params {
     metabolic_cost_foragers       = from_config.getValueOfKey<float>("metabolic_cost_foragers");
     max_fat_body                  = from_config.getValueOfKey<float>("max_fat_body");
     init_fat_body                 = from_config.getValueOfKey<float>("init_fat_body");
-    crop_size                     = from_config.getValueOfKey<float>("crop_size");
+    max_crop_size                 = from_config.getValueOfKey<float>("max_crop_size");
     proportion_fat_body_forager   = from_config.getValueOfKey<float>("proportion_fat_body_forager");
     proportion_fat_body_nurse     = from_config.getValueOfKey<float>("proportion_fat_body_nurse");
     mean_dominance                = from_config.getValueOfKey<float>("mean_dominance");
@@ -131,7 +131,7 @@ struct params {
     if (s == "metabolic_cost_foragers")     return metabolic_cost_foragers;
     if (s == "max_fat_body")                return max_fat_body;
     if (s == "init_fat_body")               return init_fat_body;
-    if (s == "crop_size")                   return crop_size;
+    if (s == "max_crop_size")               return max_crop_size;
     if (s == "proportion_fat_body_forager") return proportion_fat_body_forager;
     if (s == "proportion_fat_body_nurse")   return proportion_fat_body_nurse;
     if (s == "mean_dominance")              return mean_dominance;
