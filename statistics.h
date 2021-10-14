@@ -74,24 +74,24 @@ namespace stats {
       }
     }
 
-    // calculate Hx, marginal entropy
-     double Hx = 0;
+    // calculate Hy, marginal entropy
+     double Hy = 0;
      for (size_t i = 0; i < pTask.size(); ++i) {
        if (pTask[i] != 0.0) {
-           Hx += pTask[i] * log(pTask[i]);
+           Hy += pTask[i] * log(pTask[i]);
        }
      }
 
-     Hx *= -1;
+     Hy *= -1;
 
     // Calculate marginal entropy for individuals
-    double Hy = 0.0;
+    double Hx = 0.0;
     for (size_t i = 0; i < pInd.size(); ++i) {
            if (pInd[i] > 0) {
-               Hy += pInd[i] * log(pInd[i]); // Again, this is Shannon's equation, but not yet mulpiplied by -1...
+               Hx += pInd[i] * log(pInd[i]); // Again, this is Shannon's equation, but not yet mulpiplied by -1...
            }
     }
-    Hy *= -1; // ...and here, again, multiplied by -1
+    Hx *= -1; // ...and here, again, multiplied by -1
 
    // calculate Ixy, mutual entropy
    double Ixy = 0;
@@ -105,10 +105,11 @@ namespace stats {
      }
    }
 
-    double div_into_tasks = Ixy / Hx;
-    double div_across_indivs = Ixy / Hy;
-    double sim_div = Ixy / (sqrt(Hx * Hy));
-    return std::make_tuple(div_into_tasks, div_across_indivs, sim_div);
+    double div_into_tasks = Ixy / Hy;  // in the original paper, Hx is reversed with Hy, but
+                                       // we only get identical results to the paper assuming Hx = Hy.
+    double div_into_indivs = Ixy / Hx;
+    double sim_div = Ixy / (sqrt(Hy * Hx));
+    return std::make_tuple(div_into_tasks, div_into_indivs, sim_div);
   }
 }
 
@@ -141,7 +142,7 @@ namespace output {
     auto gorelick_stats = stats::calculate_gorelick(colony, min_t, max_t);
 
     std::cout << "DoL:\n";
-    std::cout << "Gautrais 2000: " << gautrais << "\n";
+    std::cout << "Gautrais 2002: " << gautrais << "\n";
     std::cout << "Duarte 2012  : " << duarte   << "\n";
     std::cout << "Gorelick 2004: ";
 
