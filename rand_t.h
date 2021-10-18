@@ -3,18 +3,36 @@
 #include <random>
 #include <chrono>
 #include <thread>
+#include <array>
 
 struct rnd_t {
   std::mt19937 rndgen;
 
   rnd_t() {
-    std::mt19937 rndgen_t(get_seed());
-    rndgen = rndgen_t;
+    const auto seed_array = make_seed_array();
+    std::seed_seq sseq(seed_array.cbegin(), seed_array.cend());
+
+    rndgen = std::mt19937(sseq);
   }
 
   rnd_t(size_t seed) {
     std::mt19937 rndgen_t(seed);
     rndgen = rndgen_t;
+  }
+
+  auto make_seed_array() -> std::array< uint64_t, 5>
+  {
+    const auto e1 = static_cast<uint64_t>(std::chrono::high_resolution_clock::now().time_since_epoch().count());
+      // with some luck, this is non-deterministic: TRNG
+      const auto e2 = static_cast<uint64_t>(std::random_device{}());
+      // different between invocations from different threads within one app: thread-id
+      const auto tid = std::this_thread::get_id();
+      const uint64_t e3{ std::hash<std::remove_const_t<decltype(tid)>>()(tid) };
+      // different between installations: compile time macros
+      const auto e4 = static_cast<uint64_t>(std::hash<const char*>()(__DATE__ __TIME__ __FILE__));
+      // likely different between runs, invocations and platforms: address of local
+      const auto e5 = reinterpret_cast<uint64_t>(&e1);
+    return {{e1, e2, e3, e4, e5}};
   }
 
   int get_seed() {
