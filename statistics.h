@@ -9,6 +9,9 @@
 #ifndef statistics_h
 #define statistics_h
 
+#include <numeric>
+
+
 namespace stats {
 
   double calculate_gautrais(const std::vector< individual>& colony,
