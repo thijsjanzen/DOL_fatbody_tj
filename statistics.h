@@ -20,9 +20,8 @@ namespace stats {
       f_values[cnt] = 1 - 2 * c;
       cnt++;
     }
-    double avg_f = std::accumulate(f_values.begin(), f_values.end(), 0.0) *
+    return std::accumulate(f_values.begin(), f_values.end(), 0.0) *
                    1.0 / f_values.size();
-    return avg_f;
   }
 
   double calculate_duarte(const std::vector< individual>& colony,
@@ -43,10 +42,7 @@ namespace stats {
     double p1 = std::accumulate(p.begin(), p.end(), 0.0) *
                       1.0 / num_switches;
     double p2 = 1 - p1;
-    q_bar = q_bar / (p1 * p1 + p2 * p2);
-
-    double D =  q_bar - 1;
-    return D;
+    return q_bar / (p1 * p1 + p2 * p2) - 1;
   }
 
   std::tuple<double, double, double> calculate_gorelick(const std::vector< individual>& colony,
@@ -125,7 +121,6 @@ namespace output {
     std::cout << "writing dol to: " << file_name << "\n";
     std::ofstream out(file_name.c_str(), std::ios::app);
 
-
     // write parameter values to file
     out << num_repl << "\t";
     for (auto i : param_values) {
@@ -135,7 +130,6 @@ namespace output {
 
     size_t min_t = burnin * total_time;
     size_t max_t = total_time;
-
 
     double gautrais = stats::calculate_gautrais(colony, min_t, max_t);
     double duarte = stats::calculate_duarte(colony, min_t, max_t);

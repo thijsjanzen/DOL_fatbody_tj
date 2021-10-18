@@ -38,7 +38,7 @@ struct rnd_t {
   }
 
   double threshold_normal() {
-    double  output = threshold_dist(rndgen);
+    double output = threshold_dist(rndgen);
     while(output < 0) output = threshold_dist(rndgen);
     return output;
   }
@@ -48,9 +48,7 @@ struct rnd_t {
   }
 
 private:
-  std::poisson_distribution<int> recom_pos_gen;
   std::normal_distribution<double> threshold_dist;
-
 };
 
 
