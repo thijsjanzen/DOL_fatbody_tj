@@ -28,7 +28,7 @@ namespace stats {
   double calculate_duarte(const std::vector< individual>& colony,
                           float min_t, float max_t) {
     std::vector<double> q(colony.size());
-    std::vector<double> p(colony.size());
+    std::vector<size_t> p(colony.size());
     size_t cnt = 0;
     size_t num_switches = 0;
 

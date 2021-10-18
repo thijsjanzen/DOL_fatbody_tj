@@ -45,19 +45,6 @@ struct find_track_time_by_id {
   }
 };
 
-/*bool is_in_order(const std::multiset< track_time, cmp_time >& tq) {
-  auto prev = tq.begin();
-  for (auto it = tq.begin(); it != tq.end(); ++it) {
-    if (it->time < prev->time) {
-      return false;
-    }
-    if (it->time != it->ind->get_next_t()) {
-      return false;
-    }
-  }
-  return true;
-}*/
-
 struct Simulation {
   std::vector< individual > colony;
 

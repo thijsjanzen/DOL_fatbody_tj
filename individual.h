@@ -187,16 +187,16 @@ public:
       return 0.0;
     }
 
-    int cnt = 0;
-    int checked_time_points = 0;
+    size_t cnt = 0;
+    size_t checked_time_points = 0;
     for (size_t i = 1; i < data.size(); ++i) {
 
-      auto t1 = std::get<0>(data[i - 1]);
-      auto t2 = std::get<0>(data[i]);
+      float t1 = std::get<0>(data[i - 1]);
+      float t2 = std::get<0>(data[i]);
       if (t1 >= min_t && t2 <= max_t) {
         checked_time_points++;
-        auto task1 = std::get<1>(data[i]);
-        auto task2 = std::get<1>(data[i - 1]);
+        task task1 = std::get<1>(data[i]);
+        task task2 = std::get<1>(data[i - 1]);
 
         if (task1 != task2) {
           cnt++;
@@ -207,18 +207,18 @@ public:
     return cnt * 1.0 / checked_time_points;;
   }
 
-  double count_p(float min_t, float max_t,
+  size_t count_p(float min_t, float max_t,
                  size_t& num_switches) const {
     if (data.size() <= 1) {
       num_switches += 1;
       return 0.0;
     }
 
-    int cnt = 0;
+    size_t cnt = 0;
     for (const auto& i : data) {
-      auto t = std::get<0>(i);
+      float t = std::get<0>(i);
       if (t >= min_t && t <= max_t) {
-        if (std::get<1>(i) == 0) cnt++;
+        if (std::get<1>(i) == nurse) cnt++;
         num_switches++;
       }
     }
@@ -239,7 +239,7 @@ public:
       if (start_t >= min_t && end_t <= max_t &&
           start_t <= max_t && end_t >= min_t) {
         float dt = end_t - start_t;
-        size_t index = std::get<1>(data[i]);
+        task index = std::get<1>(data[i]);
         assert(dt >= 0.f);
         task_freq[ index ] += dt;
       }
