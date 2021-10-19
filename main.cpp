@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
           output::write_dol_sliding_window(sim.colony,
                                            sim_par_in.window_size,
                                            sim_par_in.window_step_size,
-                                           sim_par_in.simulation_time,
+                                           static_cast<float>(sim_par_in.simulation_time),
                                            sim_par_in.window_file_name,
                                            num_repl);
         }
@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
                                   sim_par_in.dol_file_name,
                                   num_repl,
                                   sim_par_in.burnin,
-                                  sim_par_in.simulation_time);
+                                  static_cast<float>(sim_par_in.simulation_time));
 
       auto clock_now = std::chrono::system_clock::now();
       std::chrono::duration<double> elapsed_seconds = clock_now - clock_start;

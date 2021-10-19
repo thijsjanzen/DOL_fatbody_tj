@@ -9,6 +9,8 @@
 #ifndef statistics_h
 #define statistics_h
 
+#include <numeric>
+
 namespace stats {
 
   double calculate_gautrais(const std::vector< individual>& colony,
@@ -48,15 +50,15 @@ namespace stats {
   std::tuple<double, double, double> calculate_gorelick(const std::vector< individual>& colony,
                                                         float min_t, float max_t) {
     // HARDCODED 2 TASKS !!!
-    std::vector<std::vector<float>> m(colony.size(), std::vector<float>(2, 0));
+    std::vector<std::vector<float>> m(colony.size(), std::vector<float>(2, 0.f));
     // calculate frequency per individual per task
-    auto sum = 0.0;
+	float sum = 0.0;
     for (size_t i = 0; i < colony.size(); ++i) {
       m[i] = colony[i].calculate_task_frequency(min_t, max_t);
-      sum += m[i][0] + m[i][1];
+      sum += double(m[i][0]) + double(m[i][1]);
     }
 
-    auto mult = 1.f / sum;
+	float mult = 1.f / sum;
 
     std::vector<double> pTask(2, 0.0);
     std::vector<double> pInd(m.size(), 0.0);
@@ -65,8 +67,8 @@ namespace stats {
       for (size_t j = 0; j < 2; ++j) {
         m[i][j] *= mult; // normalize
 
-        pTask[j] += m[i][j];
-        pInd[i] += m[i][j];
+        pTask[j] += static_cast<double>(m[i][j]);
+        pInd[i] += static_cast<double>(m[i][j]);
       }
     }
 
@@ -128,12 +130,12 @@ namespace output {
       std::cout << i << " ";
     }
 
-    size_t min_t = burnin * total_time;
-    size_t max_t = total_time;
+    float min_t = burnin * total_time;
+    float max_t = total_time;
 
-    double gautrais = stats::calculate_gautrais(colony, min_t, max_t);
-    double duarte = stats::calculate_duarte(colony, min_t, max_t);
-    auto gorelick_stats = stats::calculate_gorelick(colony, min_t, max_t);
+    double gautrais		= stats::calculate_gautrais(colony, min_t, max_t);
+    double duarte			= stats::calculate_duarte(colony, min_t, max_t);
+    auto gorelick_stats		= stats::calculate_gorelick(colony, min_t, max_t);
 
     std::cout << "DoL:\n";
     std::cout << "Gautrais 2002: " << gautrais << "\n";

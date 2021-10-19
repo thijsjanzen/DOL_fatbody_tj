@@ -27,7 +27,7 @@ private:
 
   float threshold;
 
-  int ID;
+  size_t ID;
 
   std::vector<float> metabolic_rate;
   task current_task;
@@ -43,16 +43,16 @@ public:
   individual(const individual&) = delete;
   const individual& operator=(const individual&) = delete;
 
-  void new_next_t(double nt) {
+  void new_next_t(float nt) {
  //   assert(nt > next_t);
     next_t = nt;
   }
 
-  double get_next_t_threshold(float t, rnd_t& rndgen) {
+  float get_next_t_threshold(float t, rnd_t& rndgen) {
     // this function is only used by nurses
-    threshold = rndgen.threshold_normal();
+    threshold = static_cast<float>(rndgen.threshold_normal());
 
-    double dt = metabolic_rate[ nurse ] == 0.f ? 1e20f : (fat_body - threshold) / metabolic_rate[ nurse ];
+    float dt = metabolic_rate[ nurse ] == 0.f ? 1e20f : (fat_body - threshold) / metabolic_rate[ nurse ];
 
     return(t + dt);
   }
@@ -79,6 +79,9 @@ public:
     is_food_handling = false;
     previous_t = 0.f;
     next_t = 0.f;
+	ID = 0;
+	dominance = 0.f;
+	threshold = 5.f;
   }
 
   void update_fatbody(float t) {
@@ -91,16 +94,16 @@ public:
   }
 
   void set_params(const params& p,
-                  int id,
+                  size_t id,
                   rnd_t& rndgen) {
     fat_body = p.init_fat_body;
 
-    metabolic_rate = std::vector<float>{p.metabolic_cost_nurses,
-                                        p.metabolic_cost_foragers,
-                                        p.metabolic_cost_nurses // food handling
+	metabolic_rate = std::vector<float>{ p.metabolic_cost_nurses,
+										p.metabolic_cost_foragers,  
+                                        p.metabolic_cost_nurses  // food handling
     };
     ID = id;
-    dominance = rndgen.normal(p.mean_dominance, p.sd_dominance);
+    dominance = static_cast<float>(rndgen.normal(p.mean_dominance, p.sd_dominance));
   }
 
   void process_crop_forager(float fraction, float max_fat_body) {
@@ -135,7 +138,7 @@ public:
     if (crop < 0.f) crop = 0.f;
   }
 
-  double handle_food(float food, // amount shared by the forager to the nurse
+  float handle_food(float food, // amount shared by the forager to the nurse
                      float max_crop_size,
                      float t,
                      float handling_time) {
@@ -161,7 +164,7 @@ public:
                       rnd_t& rndgen,
                       float foraging_time) {
     is_food_handling = false;
-    double new_t = get_next_t_threshold(t, rndgen);
+    float new_t = get_next_t_threshold(t, rndgen);
 
     // if new_t is in the future: go nursing
     // otherwise, go foraging
@@ -213,7 +216,7 @@ public:
                  size_t& num_switches) const {
     if (data.size() <= 1) {
       num_switches += 1;
-      return 0.0;
+      return 0;
     }
 
     size_t cnt = 0;

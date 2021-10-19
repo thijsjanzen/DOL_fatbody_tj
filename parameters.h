@@ -143,7 +143,7 @@ struct params {
     if (s == "foraging_time")               return foraging_time;
     if (s == "forager_sharing_at_default")  return forager_sharing_at_default;
     if (s == "burnin")                      return burnin;
-    if (s == "num_replicates")              return num_replicates;
+    if (s == "num_replicates")              return static_cast<float>(num_replicates);
 
     throw std::runtime_error("can not find parameter");
     return -1.f; // FAIL

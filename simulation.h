@@ -73,7 +73,7 @@ struct Simulation {
     for (size_t i = 0; i < p.colony_size; ++i) {
       colony[i].set_params(p, i, rndgen);
 
-      double next_t = colony[i].get_next_t_threshold(t, rndgen);
+      float next_t = colony[i].get_next_t_threshold(t, rndgen);
       if(next_t < 0) {
         next_t = 0.0;
       }
@@ -250,8 +250,7 @@ struct Simulation {
     if (focal_individual->get_previous_task() == nurse ||
         focal_individual->get_previous_task() == food_handling) {
 
-      if (focal_individual->get_fat_body() -
-          focal_individual->get_threshold() < 1e-2) {
+      if ((focal_individual->get_fat_body() - focal_individual->get_threshold()) < 1e-2f) {
 
         // individual is here because he has reached his threshold,
         // and goes foraging
@@ -293,7 +292,7 @@ struct Simulation {
 
     auto focal_individual = next_ind->ind;
 
-    double new_t = focal_individual->get_next_t();
+    float new_t = focal_individual->get_next_t();
 
     assert(new_t >= t);
     t = new_t;
