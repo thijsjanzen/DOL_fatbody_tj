@@ -318,8 +318,6 @@ struct Simulation {
     time_queue.erase(next_ind);
   }
 
-
-
   void run_simulation() {
 
     while(t < p.simulation_time) {

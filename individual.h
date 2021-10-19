@@ -96,7 +96,9 @@ public:
     fat_body = p.init_fat_body;
 
     metabolic_rate = std::vector<float>{p.metabolic_cost_nurses,
-                                      p.metabolic_cost_foragers};
+                                        p.metabolic_cost_foragers,
+                                        p.metabolic_cost_nurses // food handling
+    };
     ID = id;
     dominance = rndgen.normal(p.mean_dominance, p.sd_dominance);
   }

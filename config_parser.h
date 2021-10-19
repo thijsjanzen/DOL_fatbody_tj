@@ -14,7 +14,7 @@
 #include <fstream>
 #include <utility>
 
-struct ERROR {
+struct config_err {
     void exitWithError(const std::string &error) {
         std::cout << error;
         std::cin.ignore();
@@ -38,7 +38,7 @@ struct Convert {
     // Convert a std::string to T.
     template <typename T>
     static T string_to_T(std::string const &val) {
-        ERROR err;
+        config_err err;
         std::istringstream istr(val);
         T returnVal;
         if (!(istr >> returnVal))
@@ -58,7 +58,7 @@ class ConfigFile {
       private:
         std::map<std::string, std::string> contents;
         std::string fName;
-        ERROR err;
+        config_err err;
 
         void removeComment(std::string &line) const {
             if (line.find('#') != line.npos)
