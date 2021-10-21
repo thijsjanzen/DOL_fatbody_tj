@@ -22,7 +22,7 @@
 #include <set>
 
 struct track_time {
-   float time;
+   ctype_ time;
    individual* ind;
 
    track_time(individual* input) {
@@ -55,11 +55,11 @@ struct Simulation {
 
   rnd_t rndgen;
 
-  float t;
+  ctype_ t;
   params p;
   int previous_time_recording;
 
-  float brood_resources;
+  ctype_ brood_resources;
 
   Simulation(const params& par) : p(par) {
     rndgen = rnd_t();
@@ -74,7 +74,7 @@ struct Simulation {
     for (size_t i = 0; i < p.colony_size; ++i) {
       colony[i].set_params(p, i, rndgen);
 
-      float next_t = colony[i].get_next_t_threshold(t, rndgen);
+      ctype_ next_t = colony[i].get_next_t_threshold(t, rndgen);
       if(next_t < 0) {
         next_t = 0.0;
       }
@@ -86,7 +86,7 @@ struct Simulation {
     }
   }
 
-  bool check_time_interval(float t, float new_t, int time_interval) const {
+  bool check_time_interval(ctype_ t, ctype_ new_t, int time_interval) const {
      if (time_interval <= 0) {
        return false;
      }
@@ -140,7 +140,7 @@ struct Simulation {
     return;
   }
 
-  float dominance_interaction(float fb_self, float fb_other) {
+  ctype_ dominance_interaction(ctype_ fb_self, ctype_ fb_other) {
     return 1.f / (1.f + expf(fb_self - fb_other));
   }
 
@@ -175,7 +175,7 @@ struct Simulation {
 
         int index_other_individual = nurses[i];
 
-        float share_amount = p.forager_sharing_at_default;
+        ctype_ share_amount = p.forager_sharing_at_default;
 
         switch(p.model_type) {
           case 1: {
@@ -198,9 +198,9 @@ struct Simulation {
           }
         }
 
-        float to_share = share_amount * focal_individual->get_crop();
+        ctype_ to_share = share_amount * focal_individual->get_crop();
 
-        float food_remaining = colony[index_other_individual].handle_food(to_share,
+        ctype_ food_remaining = colony[index_other_individual].handle_food(to_share,
                                                                           p.max_crop_size,
                                                                           t,
                                                                           p.food_handling_time);
@@ -296,7 +296,7 @@ struct Simulation {
     time_queue.erase(time_queue.begin());
 
 
-    float new_t = focal_individual->get_next_t();
+    ctype_ new_t = focal_individual->get_next_t();
 
     assert(new_t >= t);
     t = new_t;

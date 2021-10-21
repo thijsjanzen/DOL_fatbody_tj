@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 
+using ctype_ = double;
 
 struct params {
 
@@ -35,33 +36,33 @@ struct params {
 
   size_t max_number_interactions = 3; // max number of interactions with nurses at foraging return
 
-  float metabolic_cost_nurses = 0.5f;
-  float metabolic_cost_foragers = 0.5f;
-  float max_fat_body = 12.0f; // new individuals have a fat body that has this size at maximum
-  float init_fat_body = 10.0f;
-  float max_crop_size = 5.0f; // maximal resources that can be carried in crop
-  float proportion_fat_body_forager = 0.2f; // proportion of resources allocated to the fatbody by foragers
-  float proportion_fat_body_nurse   = 0.2f;  // proportion of resources allocated to the fatbody by nurses
-  float mean_dominance = 5.0f;
-  float sd_dominance = 2.0f;
-  float mean_threshold = 5.0f;
-  float sd_threshold = 1.7f;
-  float food_handling_time = 0.5f;
+  ctype_ metabolic_cost_nurses = 0.5f;
+  ctype_ metabolic_cost_foragers = 0.5f;
+  ctype_ max_fat_body = 12.0f; // new individuals have a fat body that has this size at maximum
+  ctype_ init_fat_body = 10.0f;
+  ctype_ max_crop_size = 5.0f; // maximal resources that can be carried in crop
+  ctype_ proportion_fat_body_forager = 0.2f; // proportion of resources allocated to the fatbody by foragers
+  ctype_ proportion_fat_body_nurse   = 0.2f;  // proportion of resources allocated to the fatbody by nurses
+  ctype_ mean_dominance = 5.0f;
+  ctype_ sd_dominance = 2.0f;
+  ctype_ mean_threshold = 5.0f;
+  ctype_ sd_threshold = 1.7f;
+  ctype_ food_handling_time = 0.5f;
 
-  float forager_sharing_at_default = 0.f;
+  ctype_ forager_sharing_at_default = 0.f;
  
-  float resource_amount = 1.0f;
-  float foraging_time = 5.0f;
+  ctype_ resource_amount = 1.0f;
+  ctype_ foraging_time = 5.0f;
 
   size_t num_replicates = 10;
 
-  float burnin = 0.1f;
-  float window_size = 100.f; // used for sliding window recording of DoL stats. Only used when data_interval = 0.
-  float window_step_size =  1.f;
+  ctype_ burnin = 0.1f;
+  ctype_ window_size = 100.f; // used for sliding window recording of DoL stats. Only used when data_interval = 0.
+  ctype_ window_step_size =  1.f;
 
   std::string temp_params_to_record;
   std::vector < std::string > param_names_to_record;
-  std::vector < float > params_to_record;
+  std::vector < ctype_ > params_to_record;
 
   void read_parameters_from_ini(const std::string& file_name) {
     ConfigFile from_config(file_name);
@@ -74,28 +75,28 @@ struct params {
     colony_size                   = from_config.getValueOfKey<size_t>("colony_size");
     model_type                    = from_config.getValueOfKey<size_t>("model_type");
     max_number_interactions       = from_config.getValueOfKey<size_t>("max_number_interactions");
-    metabolic_cost_nurses         = from_config.getValueOfKey<float>("metabolic_cost_nurses");
-    metabolic_cost_foragers       = from_config.getValueOfKey<float>("metabolic_cost_foragers");
-    max_fat_body                  = from_config.getValueOfKey<float>("max_fat_body");
-    init_fat_body                 = from_config.getValueOfKey<float>("init_fat_body");
-    max_crop_size                 = from_config.getValueOfKey<float>("max_crop_size");
-    proportion_fat_body_forager   = from_config.getValueOfKey<float>("proportion_fat_body_forager");
-    proportion_fat_body_nurse     = from_config.getValueOfKey<float>("proportion_fat_body_nurse");
-    mean_dominance                = from_config.getValueOfKey<float>("mean_dominance");
-    sd_dominance                  = from_config.getValueOfKey<float>("sd_dominance");
-    mean_threshold                = from_config.getValueOfKey<float>("mean_threshold");
-    sd_threshold                  = from_config.getValueOfKey<float>("sd_threshold");
-    food_handling_time            = from_config.getValueOfKey<float>("food_handling_time");
-    resource_amount               = from_config.getValueOfKey<float>("resource_amount");
-    foraging_time                 = from_config.getValueOfKey<float>("foraging_time");
+    metabolic_cost_nurses         = from_config.getValueOfKey<ctype_>("metabolic_cost_nurses");
+    metabolic_cost_foragers       = from_config.getValueOfKey<ctype_>("metabolic_cost_foragers");
+    max_fat_body                  = from_config.getValueOfKey<ctype_>("max_fat_body");
+    init_fat_body                 = from_config.getValueOfKey<ctype_>("init_fat_body");
+    max_crop_size                 = from_config.getValueOfKey<ctype_>("max_crop_size");
+    proportion_fat_body_forager   = from_config.getValueOfKey<ctype_>("proportion_fat_body_forager");
+    proportion_fat_body_nurse     = from_config.getValueOfKey<ctype_>("proportion_fat_body_nurse");
+    mean_dominance                = from_config.getValueOfKey<ctype_>("mean_dominance");
+    sd_dominance                  = from_config.getValueOfKey<ctype_>("sd_dominance");
+    mean_threshold                = from_config.getValueOfKey<ctype_>("mean_threshold");
+    sd_threshold                  = from_config.getValueOfKey<ctype_>("sd_threshold");
+    food_handling_time            = from_config.getValueOfKey<ctype_>("food_handling_time");
+    resource_amount               = from_config.getValueOfKey<ctype_>("resource_amount");
+    foraging_time                 = from_config.getValueOfKey<ctype_>("foraging_time");
     num_replicates                = from_config.getValueOfKey<size_t>("num_replicates");
     temp_params_to_record         = from_config.getValueOfKey<std::string>("params_to_record");
     param_names_to_record         = split(temp_params_to_record);
     params_to_record              = create_params_to_record(param_names_to_record);
-    forager_sharing_at_default    = from_config.getValueOfKey<float>("forager_sharing_at_default");
-    burnin                        = from_config.getValueOfKey<float>("burnin");
-    window_size                   = from_config.getValueOfKey<float>("window_size");
-    window_step_size              = from_config.getValueOfKey<float>("window_step_size");
+    forager_sharing_at_default    = from_config.getValueOfKey<ctype_>("forager_sharing_at_default");
+    burnin                        = from_config.getValueOfKey<ctype_>("burnin");
+    window_size                   = from_config.getValueOfKey<ctype_>("window_size");
+    window_step_size              = from_config.getValueOfKey<ctype_>("window_step_size");
   }
 
   std::vector< std::string > split(std::string s) {
@@ -113,20 +114,20 @@ struct params {
     return output;
   }
 
-  std::vector< float > create_params_to_record(const std::vector< std::string >& param_names) {
-    std::vector< float > output;
+  std::vector< ctype_ > create_params_to_record(const std::vector< std::string >& param_names) {
+    std::vector< ctype_ > output;
     for (auto i : param_names) {
       output.push_back(get_val(i));
     }
     return output;
   }
 
-  float get_val(std::string s) {
-    if (s == "simulation_time")             return static_cast<float>(simulation_time);
-    if (s == "data_interval")               return static_cast<float>(data_interval);
-    if (s == "colony_size")                 return static_cast<float>(colony_size);
-    if (s == "model_type")                  return static_cast<float>(model_type);
-    if (s == "max_number_interactions")     return static_cast<float>(max_number_interactions);
+  ctype_ get_val(std::string s) {
+    if (s == "simulation_time")             return static_cast<ctype_>(simulation_time);
+    if (s == "data_interval")               return static_cast<ctype_>(data_interval);
+    if (s == "colony_size")                 return static_cast<ctype_>(colony_size);
+    if (s == "model_type")                  return static_cast<ctype_>(model_type);
+    if (s == "max_number_interactions")     return static_cast<ctype_>(max_number_interactions);
     if (s == "metabolic_cost_nurses")       return metabolic_cost_nurses;
     if (s == "metabolic_cost_foragers")     return metabolic_cost_foragers;
     if (s == "max_fat_body")                return max_fat_body;
@@ -143,7 +144,7 @@ struct params {
     if (s == "foraging_time")               return foraging_time;
     if (s == "forager_sharing_at_default")  return forager_sharing_at_default;
     if (s == "burnin")                      return burnin;
-    if (s == "num_replicates")              return static_cast<float>(num_replicates);
+    if (s == "num_replicates")              return static_cast<ctype_>(num_replicates);
 
     throw std::runtime_error("can not find parameter");
     return -1.f; // FAIL

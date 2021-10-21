@@ -14,7 +14,7 @@
 namespace stats {
 
   double calculate_gautrais(const std::vector< individual>& colony,
-                            float min_t, float max_t) {
+                            ctype_ min_t, ctype_ max_t) {
     std::vector<double> f_values(colony.size());
     int cnt = 0;
     for (const auto& i : colony) {
@@ -27,7 +27,7 @@ namespace stats {
   }
 
   double calculate_duarte(const std::vector< individual>& colony,
-                          float min_t, float max_t) {
+                          ctype_ min_t, ctype_ max_t) {
     std::vector<double> q(colony.size());
     std::vector<size_t> p(colony.size());
     size_t cnt = 0;
@@ -49,9 +49,9 @@ namespace stats {
   }
 
   std::tuple<double, double, double> calculate_gorelick(const std::vector< individual>& colony,
-                                                        float min_t, float max_t) {
+                                                        ctype_ min_t, ctype_ max_t) {
     // HARDCODED 2 TASKS !!!
-    std::vector<std::vector<float>> m(colony.size(), std::vector<float>(2, 0.f));
+    std::vector<std::vector<ctype_>> m(colony.size(), std::vector<ctype_>(2, 0.f));
     // calculate frequency per individual per task
     double sum = 0.0;
     for (size_t i = 0; i < colony.size(); ++i) {
@@ -115,11 +115,11 @@ namespace stats {
 namespace output {
 
    void write_dol_to_file(const std::vector< individual>& colony,
-                          const std::vector< float>& param_values,
+                          const std::vector< ctype_>& param_values,
                           const std::string& file_name,
                           size_t num_repl,
-                          float burnin,
-                          float total_time) {
+                          ctype_ burnin,
+                          ctype_ total_time) {
 
     std::cout << "writing dol to: " << file_name << "\n";
     std::ofstream out(file_name.c_str(), std::ios::app);
@@ -130,8 +130,8 @@ namespace output {
       out << i << "\t";
     }
 
-    float min_t = burnin * total_time;
-    float max_t = total_time;
+    ctype_ min_t = burnin * total_time;
+    ctype_ max_t = total_time;
 
     double gautrais		= stats::calculate_gautrais(colony, min_t, max_t);
     double duarte			= stats::calculate_duarte(colony, min_t, max_t);
@@ -202,17 +202,17 @@ namespace output {
   }
 
   void write_dol_sliding_window(const std::vector< individual>& colony,
-                                float window_size,
-                                float window_step_size,
-                                float simulation_time,
+                                ctype_ window_size,
+                                ctype_ window_step_size,
+                                ctype_ simulation_time,
                                 std::string file_name,
                                 size_t num_repl) {
 
     std::ofstream out(file_name.c_str(), std::ios::app);
     std::cout << "writing windowed DoL output to: " << file_name << "\n";
 
-    for (float max_t = window_size; max_t <= simulation_time; max_t += window_step_size) {
-      float min_t = max_t - window_size;;
+    for (ctype_ max_t = window_size; max_t <= simulation_time; max_t += window_step_size) {
+      ctype_ min_t = max_t - window_size;;
       double gautrais = stats::calculate_gautrais(colony, min_t, max_t);
       double duarte = stats::calculate_duarte(colony, min_t, max_t);
       auto gorelick_stats = stats::calculate_gorelick(colony, min_t, max_t);
