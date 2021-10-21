@@ -192,7 +192,7 @@ namespace output {
     for (const auto& i : colony) {
       for (auto j : i.get_data()) {
         out << num_repl << "\t" << i.get_id() << "\t" << std::get<0>(j) << "\t"
-            << std::get<1>(j) << "\t" << std::get<2>(j) << "\n"; // t, task, fat_body
+            << static_cast<int>(std::get<1>(j)) << "\t" << std::get<2>(j) << "\n"; // t, task, fat_body
       }
       cnt++;
     }
