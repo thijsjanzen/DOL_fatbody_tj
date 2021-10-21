@@ -193,6 +193,7 @@ namespace output {
       for (auto j : i.get_data()) {
         out << num_repl << "\t" << i.get_id() << "\t" << j.t_ << "\t"
             << static_cast<int>(j.current_task_) << "\t" << j.fb_ << "\n"; // t, task, fat_body
+
       }
       cnt++;
     }
