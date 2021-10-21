@@ -15,6 +15,17 @@
           // 0       1          2           3
 enum class task {nurse, forage, food_handling, max_task};
 
+struct data_storage {
+  const float t_;
+  const float fb_;
+  const task current_task_;
+
+
+  data_storage(float t, task ct, float fb) : t_(t), current_task_(ct), fb_(fb)  {}
+};
+
+
+
 struct individual {
 private:
   float fat_body;
@@ -32,7 +43,7 @@ private:
   std::array<float, static_cast<int>(task::max_task)> metabolic_rate;
   task current_task;
   task previous_task;
-  std::vector< std::tuple<float, task, float > > data;
+  std::vector< data_storage > data;
 
 public:
 
@@ -184,7 +195,7 @@ public:
     auto focal_task = current_task;
     if (current_task == task::food_handling) focal_task = task::nurse;
 
-    data.push_back( std::make_tuple(t, focal_task, fat_body));
+    data.push_back( data_storage(t, focal_task, fat_body));
   }
 
   double calc_freq_switches(float min_t, float max_t) const {
@@ -196,12 +207,12 @@ public:
     size_t checked_time_points = 0;
     for (size_t i = 1; i < data.size(); ++i) {
 
-      float t1 = std::get<0>(data[i - 1]);
-      float t2 = std::get<0>(data[i]);
+      float t1 = data[i - 1].t_;
+      float t2 = data[i].t_;
       if (t1 >= min_t && t2 <= max_t) {
         checked_time_points++;
-        task task1 = std::get<1>(data[i]);
-        task task2 = std::get<1>(data[i - 1]);
+        auto task1 = data[i].current_task_;
+        auto task2 = data[i - 1].current_task_;
 
         if (task1 != task2) {
           cnt++;
@@ -221,9 +232,9 @@ public:
 
     size_t cnt = 0;
     for (const auto& i : data) {
-      float t = std::get<0>(i);
+      float t = i.t_;
       if (t >= min_t && t <= max_t) {
-        if (std::get<1>(i) == task::nurse) cnt++;
+        if (i.current_task_ == task::nurse) cnt++;
         num_switches++;
       }
     }
@@ -235,16 +246,16 @@ public:
 
     for (size_t i = 0; i < data.size(); ++i) {
 
-      float start_t = std::get<0>(data[i]);
+      float start_t = data[i].t_;
       float end_t = max_t;
       if (i + 1 < data.size()) {
-        end_t = std::get<0>(data[i + 1]);
+        end_t = data[i + 1].t_;
       }
 
       if (start_t >= min_t && end_t <= max_t &&
           start_t <= max_t && end_t >= min_t) {
         float dt = end_t - start_t;
-        int index = static_cast<int>(std::get<1>(data[i]));
+        int index = static_cast<int>(data[i].current_task_);
         assert(dt >= 0.f);
         task_freq[ index ] += dt;
       }
@@ -262,7 +273,7 @@ public:
   task get_task() const {return current_task;}
   int get_id() const {return ID;}
   task get_previous_task() const {return previous_task;}
-  const std::vector< std::tuple<float, task, float > >& get_data() const {return data;}
+  const std::vector< data_storage >& get_data() const {return data;}
 
   void set_fat_body(float fb) {fat_body = fb;}
   void set_crop(float c) {

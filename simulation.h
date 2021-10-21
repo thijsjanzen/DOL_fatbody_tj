@@ -121,7 +121,7 @@ struct Simulation {
      for (const auto& i : colony) {
        out_file << t << "\t"
                 << i.get_id() << "\t"
-                << i.get_task() << "\t"
+                << static_cast<int>(i.get_task()) << "\t"
                 << i.get_fat_body() << "\t"
                 << i.get_crop() << "\n";
      }
@@ -243,7 +243,7 @@ struct Simulation {
   }
 
   void pick_task(individual* focal_individual) {
-    if (focal_individual->get_previous_task() == forage) {
+    if (focal_individual->get_previous_task() == task::forage) {
       // individual has returned from foraging
       // now has to decide if he goes foraging again.
       // the moment he goes foraging is picked with new_t:
@@ -251,8 +251,8 @@ struct Simulation {
                                        rndgen,
                                        p.foraging_time);
     }
-    if (focal_individual->get_previous_task() == nurse ||
-        focal_individual->get_previous_task() == food_handling) {
+    if (focal_individual->get_previous_task() == task::nurse ||
+        focal_individual->get_previous_task() == task::food_handling) {
 
       if ((focal_individual->get_fat_body() - focal_individual->get_threshold()) < 1e-2f) {
 
@@ -271,14 +271,14 @@ struct Simulation {
 
   void update_nurse_list(individual* focal_individual) {
     // individual started nursing:
-    if (focal_individual->get_task() == nurse) {
+    if (focal_individual->get_task() == task::nurse) {
       // but was not nursing:
-      if (focal_individual->get_previous_task() != nurse) {
+      if (focal_individual->get_previous_task() != task::nurse) {
         nurses.push_back(focal_individual->get_id());
       }
     } else {
       // individual stopped nursing
-      if (focal_individual->get_previous_task() == nurse) {
+      if (focal_individual->get_previous_task() == task::nurse) {
         // but was nursing
         remove_from_nurses(focal_individual->get_id());
       }
@@ -306,7 +306,7 @@ struct Simulation {
     // update focal individual
     focal_individual->set_previous_task();
 
-    if (focal_individual->get_task() == forage) {
+    if (focal_individual->get_task() == task::forage) {
       // update forager
       update_forager(focal_individual);
     } else {
