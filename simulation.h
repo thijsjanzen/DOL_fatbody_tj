@@ -145,11 +145,8 @@ struct Simulation {
   }
 
   void update_queue(int index) {
-    // TODO: add lambda
-    // with std::addressof(tt.ind);
-    auto it = std::find_if(time_queue.begin(), time_queue.end(), find_track_time_by_id(index));
-
-  //  auto it = std::find_if(time_queue.begin(), time_queue.end(), [](const auto& ti)
+    auto it = std::find_if(time_queue.begin(), time_queue.end(),
+                            [&](const auto& focal) {return focal.ind->get_id() == index ? true : false; });
 
     if (it == time_queue.end()) {
       throw(std::runtime_error(std::string("failed to do find_if")));
@@ -159,12 +156,13 @@ struct Simulation {
   }
 
   void share_resources(individual* focal_individual) {
+    if (nurses.empty()) return;
+
     if (p.model_type > 0 || p.forager_sharing_at_default > 0.f) {
       // in model 0, there is NO sharing
       size_t num_interactions = std::min( static_cast<size_t>(p.max_number_interactions),
                                           static_cast<size_t>(nurses.size()));
 
-      // TODO: add check if there are any nurses at all.
       std::vector< int > visited_nurses(num_interactions);
 
       for (size_t i = 0; i < num_interactions; ++i) {
