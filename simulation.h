@@ -43,6 +43,7 @@ struct find_track_time_by_id {
   bool operator()(const track_time& tt) const {
     return tt.ind->get_id() == focal_id;
   }
+
 };
 
 struct Simulation {
@@ -144,16 +145,17 @@ struct Simulation {
   }
 
   void update_queue(int index) {
-    auto t1 = time_queue.size();
+    // TODO: add lambda
+    // with std::addressof(tt.ind);
     auto it = std::find_if(time_queue.begin(), time_queue.end(), find_track_time_by_id(index));
+
+  //  auto it = std::find_if(time_queue.begin(), time_queue.end(), [](const auto& ti)
 
     if (it == time_queue.end()) {
       throw(std::runtime_error(std::string("failed to do find_if")));
     }
     time_queue.erase(it);
     add_to_timequeue(&colony[index]);
-    auto t2 = time_queue.size();
-    assert(t1 == t2);
   }
 
   void share_resources(individual* focal_individual) {
@@ -162,32 +164,40 @@ struct Simulation {
       size_t num_interactions = std::min( static_cast<size_t>(p.max_number_interactions),
                                           static_cast<size_t>(nurses.size()));
 
+      // TODO: add check if there are any nurses at all.
       std::vector< int > visited_nurses(num_interactions);
 
       for (size_t i = 0; i < num_interactions; ++i) {
         if (nurses.size() > 1) {
           size_t j = i + rndgen.random_number(static_cast<int>(nurses.size() - i));
-          auto tmp = nurses[j];
-          nurses[j] = nurses[i];
-          nurses[i] = tmp;
+          if (i != j) {
+            std::swap(nurses[i], nurses[j]);
+          }
         }
 
         int index_other_individual = nurses[i];
 
         float share_amount = p.forager_sharing_at_default;
-        if (p.model_type == 1) {
-          share_amount = 1.f / num_interactions;
-        }
-        if (p.model_type == 2) {
-         // share_amount = dominance_interaction(focal_individual->get_dominance(),
-         //                                      colony[index_other_individual].get_dominance());
-          if (focal_individual->get_dominance() < colony[index_other_individual].get_dominance()) {
-            share_amount = 1.0f;
+
+        switch(p.model_type) {
+          case 1: {
+              share_amount = 1.f / num_interactions;
+            break;
           }
-        }
-        if (p.model_type == 3) {
-          share_amount = dominance_interaction(focal_individual->get_fat_body(),
-                                              colony[index_other_individual].get_fat_body());
+          case 2: {
+              if (focal_individual->get_dominance() < colony[index_other_individual].get_dominance()) {
+                share_amount = 1.0f;
+              }
+            break;
+          }
+          case 3: {
+              share_amount = dominance_interaction(focal_individual->get_fat_body(),
+                                                   colony[index_other_individual].get_fat_body());
+            break;
+          }
+          default: {
+            share_amount = 0.f;
+          }
         }
 
         float to_share = share_amount * focal_individual->get_crop();
@@ -206,13 +216,10 @@ struct Simulation {
         focal_individual->reduce_crop(to_share - food_remaining);
       }
 
-      auto t1 = time_queue.size();
       for (auto nurse_id : visited_nurses) {
         remove_from_nurses(nurse_id);
         update_queue(nurse_id);
       }
-      auto t2 = time_queue.size();
-      assert(t1 == t2);
     }
   }
 
@@ -227,7 +234,6 @@ struct Simulation {
     // the remainder in the crop is digested entirely.
     focal_individual->process_crop_forager(1.f,
                                            p.max_fat_body);
-
     return;
   }
 
@@ -240,9 +246,7 @@ struct Simulation {
     if (focal_individual->get_previous_task() == forage) {
       // individual has returned from foraging
       // now has to decide if he goes foraging again.
-
       // the moment he goes foraging is picked with new_t:
-
       focal_individual->decide_new_task(t,
                                        rndgen,
                                        p.foraging_time);
@@ -251,6 +255,8 @@ struct Simulation {
         focal_individual->get_previous_task() == food_handling) {
 
       if ((focal_individual->get_fat_body() - focal_individual->get_threshold()) < 1e-2f) {
+
+
 
         // individual is here because he has reached his threshold,
         // and goes foraging
@@ -286,11 +292,11 @@ struct Simulation {
 
 
   void update_colony() {
-    auto next_ind = time_queue.begin();
 
    // assert(is_in_order(time_queue));
+    auto focal_individual = time_queue.begin()->ind;
+    time_queue.erase(time_queue.begin());
 
-    auto focal_individual = next_ind->ind;
 
     float new_t = focal_individual->get_next_t();
 
@@ -314,7 +320,6 @@ struct Simulation {
     focal_individual->update_tasks(t);
 
     add_to_timequeue(focal_individual);
-    time_queue.erase(next_ind);
   }
 
   void run_simulation() {

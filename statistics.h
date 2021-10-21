@@ -19,7 +19,7 @@ namespace stats {
     int cnt = 0;
     for (const auto& i : colony) {
       double c = i.calc_freq_switches(min_t, max_t);
-      f_values[cnt] = 1 - 2 * c;
+      f_values[cnt] = 1.0 - 2.0 * c;
       cnt++;
     }
     return std::accumulate(f_values.begin(), f_values.end(), 0.0) *
@@ -41,6 +41,7 @@ namespace stats {
     double q_bar = std::accumulate(q.begin(), q.end(), 0.0) *
                     1.0 / q.size();
     // now we need p1 ^ 2 and p2 ^ 2
+    // TODO: check if num_switches == 0
     double p1 = std::accumulate(p.begin(), p.end(), 0.0) *
                       1.0 / num_switches;
     double p2 = 1 - p1;
@@ -127,7 +128,6 @@ namespace output {
     out << num_repl << "\t";
     for (auto i : param_values) {
       out << i << "\t";
-      std::cout << i << " ";
     }
 
     float min_t = burnin * total_time;
@@ -137,7 +137,6 @@ namespace output {
     double duarte			= stats::calculate_duarte(colony, min_t, max_t);
     auto gorelick_stats		= stats::calculate_gorelick(colony, min_t, max_t);
 
-    std::cout << "DoL:\n";
     std::cout << "Gautrais 2002: " << gautrais << "\n";
     std::cout << "Duarte 2012  : " << duarte   << "\n";
     std::cout << "Gorelick 2004: ";
@@ -169,7 +168,6 @@ namespace output {
     out << "repl\t";
     for (auto i : param_names) {
       out << i << "\t";
-      std::cout << i << "\t";
     } out << "gautrais\tduarte\tgorelick_tasks\tgorelick_indiv\tgorelick_both\n";
     out.close();
 

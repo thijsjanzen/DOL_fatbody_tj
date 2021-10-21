@@ -12,8 +12,8 @@
 #include "parameters.h"
 #include "rand_t.h"
 #include <cassert>
-
-enum task {nurse, forage, food_handling};
+          // 0       1          2           3
+enum task {nurse, forage, food_handling, max_task};
 
 struct individual {
 private:
@@ -29,7 +29,7 @@ private:
 
   size_t ID;
 
-  std::vector<float> metabolic_rate;
+  std::array<float, task::max_task> metabolic_rate;
   task current_task;
   task previous_task;
   std::vector< std::tuple<float, task, float > > data;
@@ -44,7 +44,6 @@ public:
   const individual& operator=(const individual&) = delete;
 
   void new_next_t(float nt) {
- //   assert(nt > next_t);
     next_t = nt;
   }
 
@@ -89,6 +88,7 @@ public:
     assert(dt >= 0);
     if (dt < 0) return;
     previous_t = t;
+  //  assert(current_task < metabolic_rate.size());
     fat_body -= dt * metabolic_rate[ current_task ];
     if (fat_body < 0) fat_body = 0.f; // should not happen!
   }
@@ -98,10 +98,10 @@ public:
                   rnd_t& rndgen) {
     fat_body = p.init_fat_body;
 
-	metabolic_rate = std::vector<float>{ p.metabolic_cost_nurses,
-										p.metabolic_cost_foragers,  
-                                        p.metabolic_cost_nurses  // food handling
-    };
+    metabolic_rate = {p.metabolic_cost_nurses,
+                      p.metabolic_cost_foragers,
+                      p.metabolic_cost_nurses};
+
     ID = id;
     dominance = static_cast<float>(rndgen.normal(p.mean_dominance, p.sd_dominance));
   }
