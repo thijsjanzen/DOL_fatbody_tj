@@ -53,13 +53,13 @@ namespace stats {
     // HARDCODED 2 TASKS !!!
     std::vector<std::vector<float>> m(colony.size(), std::vector<float>(2, 0.f));
     // calculate frequency per individual per task
-	float sum = 0.0;
+    double sum = 0.0;
     for (size_t i = 0; i < colony.size(); ++i) {
       m[i] = colony[i].calculate_task_frequency(min_t, max_t);
       sum += double(m[i][0]) + double(m[i][1]);
     }
 
-	float mult = 1.f / sum;
+    double mult = 1.0 / sum;
 
     std::vector<double> pTask(2, 0.0);
     std::vector<double> pInd(m.size(), 0.0);
@@ -69,7 +69,7 @@ namespace stats {
         m[i][j] *= mult; // normalize
 
         pTask[j] += static_cast<double>(m[i][j]);
-        pInd[i] += static_cast<double>(m[i][j]);
+        pInd[i]  += static_cast<double>(m[i][j]);
       }
     }
 

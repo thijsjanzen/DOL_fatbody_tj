@@ -13,7 +13,7 @@
 #include "rand_t.h"
 #include <cassert>
           // 0       1          2           3
-enum task {nurse, forage, food_handling, max_task};
+enum class task {nurse, forage, food_handling, max_task};
 
 struct individual {
 private:
@@ -29,7 +29,7 @@ private:
 
   size_t ID;
 
-  std::array<float, task::max_task> metabolic_rate;
+  std::array<float, static_cast<int>(task::max_task)> metabolic_rate;
   task current_task;
   task previous_task;
   std::vector< std::tuple<float, task, float > > data;
@@ -51,18 +51,18 @@ public:
     // this function is only used by nurses
     threshold = static_cast<float>(rndgen.threshold_normal());
 
-    float dt = metabolic_rate[ nurse ] == 0.f ? 1e20f : (fat_body - threshold) / metabolic_rate[ nurse ];
+    float dt = metabolic_rate[ static_cast<int>(task::nurse) ] == 0.f ? 1e20f : (fat_body - threshold) / metabolic_rate[ static_cast<int>(task::nurse) ];
 
     return(t + dt);
   }
 
   void go_forage(float t, float forage_time) {
-    current_task = forage;
+    current_task = task::forage;
     new_next_t(t + forage_time);
   }
 
   void go_nurse(float new_t) {
-    current_task = nurse;
+    current_task = task::nurse;
     new_next_t(new_t);
   }
 
@@ -71,8 +71,8 @@ public:
   }
 
   individual() {
-    current_task = nurse;
-    previous_task = nurse;
+    current_task = task::nurse;
+    previous_task = task::nurse;
     crop = 0.f;
     fat_body = 1.f;
     is_food_handling = false;
@@ -89,7 +89,7 @@ public:
     if (dt < 0) return;
     previous_t = t;
   //  assert(current_task < metabolic_rate.size());
-    fat_body -= dt * metabolic_rate[ current_task ];
+    fat_body -= dt * metabolic_rate[ static_cast<int>(current_task) ];
     if (fat_body < 0) fat_body = 0.f; // should not happen!
   }
 
@@ -153,7 +153,7 @@ public:
       food -= food_received;
     }
 
-    current_task = food_handling;
+    current_task = task::food_handling;
     new_next_t(t + handling_time);
     is_food_handling = true;
 
@@ -182,7 +182,7 @@ public:
     previous_t = t;
 
     auto focal_task = current_task;
-    if (current_task == food_handling) focal_task = nurse;
+    if (current_task == task::food_handling) focal_task = task::nurse;
 
     data.push_back( std::make_tuple(t, focal_task, fat_body));
   }
@@ -223,7 +223,7 @@ public:
     for (const auto& i : data) {
       float t = std::get<0>(i);
       if (t >= min_t && t <= max_t) {
-        if (std::get<1>(i) == nurse) cnt++;
+        if (std::get<1>(i) == task::nurse) cnt++;
         num_switches++;
       }
     }
@@ -244,7 +244,7 @@ public:
       if (start_t >= min_t && end_t <= max_t &&
           start_t <= max_t && end_t >= min_t) {
         float dt = end_t - start_t;
-        task index = std::get<1>(data[i]);
+        int index = static_cast<int>(std::get<1>(data[i]));
         assert(dt >= 0.f);
         task_freq[ index ] += dt;
       }
