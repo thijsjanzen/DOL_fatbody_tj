@@ -16,12 +16,12 @@
 
 int main(int argc, char* argv[]) {
   try {
-    //if (argc < 1) { // needs run name
-    //         std::cerr << "Usage: " << argv[0] << "parameter name" << std::endl;
-    //         return 1;
-    //}
+    if (argc < 1) { // needs run name
+             std::cerr << "Usage: " << argv[0] << "parameter name" << std::endl;
+             return 1;
+    }
 
-    std::string file_name = (argc > 2) ? argv[1] : "../test.ini";
+    std::string file_name = (2 < argc) ? argv[1] : "../test.ini";
 
     std::cout << "reading from config file: " << file_name << "\n";
     std::ifstream test_file(file_name.c_str());

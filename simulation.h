@@ -288,7 +288,6 @@ struct Simulation {
 
   void update_colony() {
     auto next_ind = time_queue.begin();
-    time_queue.erase(next_ind);
 
    // assert(is_in_order(time_queue));
 
@@ -316,6 +315,7 @@ struct Simulation {
     focal_individual->update_tasks(t);
 
     add_to_timequeue(focal_individual);
+    time_queue.erase(next_ind);
   }
 
 
