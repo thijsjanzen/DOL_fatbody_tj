@@ -15,7 +15,7 @@ struct rnd_t {
     rndgen = std::mt19937(sseq);
   }
 
-  rnd_t(size_t seed) {
+  rnd_t(unsigned int seed) {
     std::mt19937 rndgen_t(seed);
     rndgen = rndgen_t;
   }
@@ -49,7 +49,7 @@ struct rnd_t {
   }
 
   float normal(double m, double s) {
-    std::normal_distribution<float> norm_dist(m, s);
+    std::normal_distribution<float> norm_dist(static_cast<float>(m), static_cast<float>(s));
     return norm_dist(rndgen);
   }
 
@@ -60,7 +60,7 @@ struct rnd_t {
   }
 
   void set_threshold_dist(double m, double s) {
-    threshold_dist = std::normal_distribution<float>(m, s);
+    threshold_dist = std::normal_distribution<float>(static_cast<float>(m), static_cast<float>(s));
   }
 
 private:

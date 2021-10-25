@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-using ctype_ = double;
+using ctype_ = float;
 
 struct params {
 

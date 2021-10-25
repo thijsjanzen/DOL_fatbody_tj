@@ -51,15 +51,15 @@ namespace stats {
   std::tuple<double, double, double> calculate_gorelick(const std::vector< individual>& colony,
                                                         ctype_ min_t, ctype_ max_t) {
     // HARDCODED 2 TASKS !!!
-    std::vector<std::vector<ctype_>> m(colony.size(), std::vector<ctype_>(2, 0.f));
+    std::vector<std::vector<ctype_>> m(colony.size(), std::vector<ctype_>(2, 0.0));
     // calculate frequency per individual per task
-    double sum = 0.0;
+    ctype_ sum = 0.0;
     for (size_t i = 0; i < colony.size(); ++i) {
       m[i] = colony[i].calculate_task_frequency(min_t, max_t);
-      sum += double(m[i][0]) + double(m[i][1]);
+      sum += (m[i][0] + m[i][1]);
     }
 
-    double mult = 1.0 / sum;
+    ctype_ mult = static_cast<ctype_>(1.0) / sum;
 
     std::vector<double> pTask(2, 0.0);
     std::vector<double> pInd(m.size(), 0.0);

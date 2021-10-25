@@ -38,7 +38,7 @@ private:
 
   ctype_ threshold;
 
-  size_t ID;
+  int ID;
 
   std::array<ctype_, static_cast<int>(task::max_task)> metabolic_rate;
   task current_task;
@@ -106,7 +106,7 @@ public:
   }
 
   void set_params(const params& p,
-                  size_t id,
+                  int id,
                   rnd_t& rndgen) {
     fat_body = p.init_fat_body;
 

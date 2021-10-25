@@ -72,7 +72,7 @@ struct Simulation {
     brood_resources = 0.0;
 
     for (size_t i = 0; i < p.colony_size; ++i) {
-      colony[i].set_params(p, i, rndgen);
+      colony[i].set_params(p, static_cast<int>(i), rndgen);
 
       ctype_ next_t = colony[i].get_next_t_threshold(t, rndgen);
       if(next_t < 0) {
@@ -141,7 +141,7 @@ struct Simulation {
   }
 
   ctype_ dominance_interaction(ctype_ fb_self, ctype_ fb_other) {
-    return 1.f / (1.f + expf(fb_self - fb_other));
+    return static_cast<ctype_>(1.f / (1.f + expf(static_cast<float>(fb_self - fb_other))));
   }
 
   void update_queue(int index) {
