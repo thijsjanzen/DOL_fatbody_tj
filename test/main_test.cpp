@@ -126,10 +126,10 @@ TEST_CASE("TEST freq") {
   test_indiv.set_params(parameters,
                         id, rndgen);
 
-  test_indiv.set_current_task(nurse);
+  test_indiv.set_current_task(task::nurse);
   test_indiv.update_tasks(1.f);
   test_indiv.set_previous_task();
-  test_indiv.set_current_task(forage);
+  test_indiv.set_current_task(task::forage);
   test_indiv.update_tasks(2.f);
 
   float freq_s = test_indiv.calc_freq_switches(0.f, parameters.simulation_time);
@@ -199,6 +199,6 @@ TEST_CASE("TEST individual") {
   test_indiv.update_tasks(1.f);
   CHECK(test_indiv.get_previous_t() == 1.f);
   auto temp_data = test_indiv.get_data().back();
-  CHECK(std::get<0>(temp_data) == 1.f);
-  CHECK(std::get<1>(temp_data) == test_indiv.get_task());
+  CHECK(temp_data.task  == test_indiv.get_task());
+  CHECK(temp_data.t == 1.f);
 }
