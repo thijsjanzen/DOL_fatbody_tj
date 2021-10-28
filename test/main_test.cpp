@@ -199,6 +199,6 @@ TEST_CASE("TEST individual") {
   test_indiv.update_tasks(1.f);
   CHECK(test_indiv.get_previous_t() == 1.f);
   auto temp_data = test_indiv.get_data().back();
-  CHECK(temp_data.task  == test_indiv.get_task());
-  CHECK(temp_data.t == 1.f);
+  CHECK(temp_data.current_task_  == test_indiv.get_task());
+  CHECK(temp_data.t_ == 1.f);
 }
