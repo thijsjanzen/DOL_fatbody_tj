@@ -43,7 +43,6 @@ struct find_track_time_by_id {
   bool operator()(const track_time& tt) const {
     return tt.ind->get_id() == focal_id;
   }
-
 };
 
 struct Simulation {
@@ -140,8 +139,17 @@ struct Simulation {
     return;
   }
 
-  ctype_ dominance_interaction(ctype_ fb_self, ctype_ fb_other) {
-    return static_cast<ctype_>(1.f / (1.f + expf(static_cast<float>(fb_self - fb_other))));
+  ctype_ dominance_interaction(ctype_ fb_self, ctype_ fb_other, ctype_ b) {
+    //return static_cast<ctype_>(1.f / (1.f + expf(static_cast<float>(fb_self - fb_other))));
+
+    // simple case:
+  //  return fb_other / (fb_self + fb_other);
+
+    // soft max
+    float exp_other = expf(fb_other * b);
+    float exp_self  = expf(fb_self * b);
+
+    return exp_other / (exp_self + exp_other);
   }
 
   void update_queue(int index) {
@@ -183,14 +191,15 @@ struct Simulation {
             break;
           }
           case 2: {
-              if (focal_individual->get_dominance() < colony[index_other_individual].get_dominance()) {
-                share_amount = 1.0f;
-              }
+            share_amount = dominance_interaction(focal_individual->get_dominance()   ,
+                                                 colony[index_other_individual].get_dominance(),
+                                                 p.soft_max);
             break;
           }
           case 3: {
               share_amount = dominance_interaction(focal_individual->get_fat_body(),
-                                                   colony[index_other_individual].get_fat_body());
+                                                   colony[index_other_individual].get_fat_body(),
+                                                   p.soft_max);
             break;
           }
           default: {
