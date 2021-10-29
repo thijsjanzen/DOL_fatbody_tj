@@ -41,13 +41,13 @@ TEST_CASE("TEST simulation") {
 
 
   test_sim.colony[0].set_previous_task();
-  test_sim.colony[0].set_current_task(forage);
+  test_sim.colony[0].set_current_task(task::forage);
   test_sim.update_nurse_list(&test_sim.colony[0]);
   // should be removed from nurses now.
   test_sim.nurses.size() == parameters.colony_size - 1;
 
 
-  test_sim.colony[10].set_current_task(forage);
+  test_sim.colony[10].set_current_task(task::forage);
   test_sim.remove_from_nurses(10);
   REQUIRE(test_sim.nurses.size() == parameters.colony_size - 2);
   REQUIRE(test_sim.nurses[10] == 98); // swapped
@@ -80,16 +80,16 @@ TEST_CASE("TEST simulation") {
 
 // update task
   test_sim.colony[0].set_fat_body(1000.f);
-  test_sim.colony[0].set_current_task(forage);
+  test_sim.colony[0].set_current_task(task::forage);
   test_sim.colony[0].set_previous_task();
   test_sim.pick_task(&test_sim.colony[0]);
-  CHECK(test_sim.colony[0].get_task() == nurse);
+  CHECK(test_sim.colony[0].get_task() == task::nurse);
 
   test_sim.colony[0].set_fat_body(0.f);
-  test_sim.colony[0].set_current_task(nurse);
+  test_sim.colony[0].set_current_task(task::nurse);
   test_sim.colony[0].set_previous_task();
   test_sim.pick_task(&test_sim.colony[0]);
-  CHECK(test_sim.colony[0].get_task() == forage);
+  CHECK(test_sim.colony[0].get_task() == task::forage);
 }
 
 TEST_CASE("TEST update colony") {
@@ -126,10 +126,10 @@ TEST_CASE("TEST freq") {
   test_indiv.set_params(parameters,
                         id, rndgen);
 
-  test_indiv.set_current_task(nurse);
+  test_indiv.set_current_task(task::nurse);
   test_indiv.update_tasks(1.f);
   test_indiv.set_previous_task();
-  test_indiv.set_current_task(forage);
+  test_indiv.set_current_task(task::forage);
   test_indiv.update_tasks(2.f);
 
   float freq_s = test_indiv.calc_freq_switches(0.f, parameters.simulation_time);
@@ -186,19 +186,19 @@ TEST_CASE("TEST individual") {
   test_indiv.decide_new_task(0.f,
                              rndgen,
                              1.f);
-  CHECK(test_indiv.get_task() == nurse);
+  CHECK(test_indiv.get_task() == task::nurse);
   CHECK(test_indiv.get_next_t() > 1.f);
 
   test_indiv.set_fat_body(0.f);
   test_indiv.decide_new_task(0.f,
                              rndgen,
                              1.f);
-  CHECK(test_indiv.get_task() == forage);
+  CHECK(test_indiv.get_task() == task::forage);
   CHECK(test_indiv.get_next_t() == 1.f);
 
   test_indiv.update_tasks(1.f);
   CHECK(test_indiv.get_previous_t() == 1.f);
   auto temp_data = test_indiv.get_data().back();
-  CHECK(std::get<0>(temp_data) == 1.f);
-  CHECK(std::get<1>(temp_data) == test_indiv.get_task());
+  CHECK(temp_data.current_task_  == test_indiv.get_task());
+  CHECK(temp_data.t_ == 1.f);
 }
