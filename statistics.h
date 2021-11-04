@@ -13,12 +13,79 @@
 
 namespace stats {
 
+  double calc_freq_switches(const individual& indiv, 
+                            ctype_ min_t, ctype_ max_t) {
+    if (indiv.get_data().size() <= 1) {
+      return 0.0;
+    }
+
+    size_t cnt = 0;
+    size_t checked_time_points = 0;
+    for (size_t i = 1; i < indiv.get_data().size(); ++i) {
+
+      ctype_ t1 = indiv.get_data()[i - 1].t_;
+      ctype_ t2 = indiv.get_data()[i].t_;
+      if (t1 >= min_t && t2 <= max_t) {
+        checked_time_points++;
+        auto task1 = indiv.get_data()[i].current_task_;
+        auto task2 = indiv.get_data()[i - 1].current_task_;
+
+        if (task1 != task2) {
+          cnt++;
+        }
+      }
+    }
+
+    return cnt * 1.0 / checked_time_points;;
+  }
+
+  size_t count_p(const individual& indiv, ctype_ min_t, ctype_ max_t,
+                 size_t& num_switches)  {
+    if (indiv.get_data().size() <= 1) {
+      num_switches += 1;
+      return 0;
+    }
+
+    size_t cnt = 0;
+    for (const auto& i : indiv.get_data()) {
+      ctype_ t = i.t_;
+      if (t >= min_t && t <= max_t) {
+        if (i.current_task_ == task::nurse) cnt++;
+        num_switches++;
+      }
+    }
+    return cnt;
+  }
+
+  std::vector<ctype_> calculate_task_frequency(const individual& indiv,
+                                               ctype_ min_t, ctype_ max_t)  {
+    std::vector<ctype_> task_freq(2, 0.0);
+
+    for (size_t i = 0; i < indiv.get_data().size(); ++i) {
+
+      ctype_ start_t = indiv.get_data()[i].t_;
+      ctype_ end_t = max_t;
+      if (i + 1 < indiv.get_data().size()) {
+        end_t = indiv.get_data()[i + 1].t_;
+      }
+
+      if (start_t >= min_t && end_t <= max_t &&
+          start_t <= max_t && end_t >= min_t) {
+        ctype_ dt = end_t - start_t;
+        int index = static_cast<int>(indiv.get_data()[i].current_task_);
+        assert(dt >= 0.f);
+        task_freq[ index ] += dt;
+      }
+    }
+    return task_freq;
+  }
+
   double calculate_gautrais(const std::vector< individual>& colony,
                             ctype_ min_t, ctype_ max_t) {
     std::vector<double> f_values(colony.size());
     int cnt = 0;
     for (const auto& i : colony) {
-      double c = i.calc_freq_switches(min_t, max_t);
+      double c = calc_freq_switches(i, min_t, max_t);
       f_values[cnt] = 1.0 - 2.0 * c;
       cnt++;
     }
@@ -34,8 +101,8 @@ namespace stats {
     size_t num_switches = 0;
 
     for (const auto& i : colony) {
-      q[cnt] = 1 - i.calc_freq_switches(min_t, max_t);
-      p[cnt] = i.count_p(min_t, max_t, num_switches);
+      q[cnt] = 1 - calc_freq_switches(i, min_t, max_t);
+      p[cnt] = count_p(i, min_t, max_t, num_switches);
       cnt++;
     }
     double q_bar = std::accumulate(q.begin(), q.end(), 0.0) *
@@ -55,7 +122,7 @@ namespace stats {
     // calculate frequency per individual per task
     ctype_ sum = 0.0;
     for (size_t i = 0; i < colony.size(); ++i) {
-      m[i] = colony[i].calculate_task_frequency(min_t, max_t);
+      m[i] = calculate_task_frequency(colony[i], min_t, max_t);
       sum += (m[i][0] + m[i][1]);
     }
 
@@ -191,7 +258,7 @@ namespace output {
     int cnt = 0;
     for (const auto& i : colony) {
       for (auto j : i.get_data()) {
-        out << num_repl << "\t" << i.get_id() << "\t" << j.t_ << "\t"
+        out << num_repl << "\t" << cnt << "\t" << j.t_ << "\t"
             << static_cast<int>(j.current_task_) << "\t" << j.fb_ << "\n"; // t, task, fat_body
 
       }

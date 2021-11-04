@@ -8,16 +8,12 @@
 struct rnd_t {
   std::mt19937 rndgen;
 
-  rnd_t() {
+  rnd_t(ctype_ m, ctype_ s) {
     const auto seed_array = make_seed_array();
     std::seed_seq sseq(seed_array.cbegin(), seed_array.cend());
 
     rndgen = std::mt19937(sseq);
-  }
-
-  rnd_t(unsigned int seed) {
-    std::mt19937 rndgen_t(seed);
-    rndgen = rndgen_t;
+    set_threshold_dist(m, s);
   }
 
   auto make_seed_array() -> std::array< uint64_t, 5>
@@ -48,23 +44,29 @@ struct rnd_t {
     return std::uniform_int_distribution<> (0, static_cast<int>(n - 1))(rndgen);
   }
 
-  float normal(double m, double s) {
-    std::normal_distribution<float> norm_dist(static_cast<float>(m), static_cast<float>(s));
+  ctype_ normal(ctype_ m, ctype_ s) {
+    std::normal_distribution<ctype_> norm_dist(static_cast<ctype_>(m), static_cast<ctype_>(s));
     return norm_dist(rndgen);
   }
 
-  float threshold_normal() {
-    float output = threshold_dist(rndgen);
+  ctype_ uniform() {
+    return unif_dist(rndgen);
+  }
+
+  ctype_ threshold_normal() {
+    ctype_ output = threshold_dist(rndgen);
     while(output < 0) output = threshold_dist(rndgen);
     return output;
   }
 
-  void set_threshold_dist(double m, double s) {
-    threshold_dist = std::normal_distribution<float>(static_cast<float>(m), static_cast<float>(s));
+  void set_threshold_dist(ctype_ m, ctype_ s) {
+    threshold_dist = std::normal_distribution<ctype_>(static_cast<ctype_>(m), static_cast<ctype_>(s));
   }
 
 private:
   std::normal_distribution<float> threshold_dist;
+  std::uniform_real_distribution<ctype_> unif_dist = std::uniform_real_distribution<ctype_>(ctype_(0), 
+                                                                                      ctype_(1));
 };
 
 

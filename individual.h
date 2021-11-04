@@ -23,7 +23,14 @@ struct data_storage {
   data_storage(ctype_ t, task ct, ctype_ fb) : t_(t), fb_(fb), current_task_(ct)  {}
 };
 
+// TODO: make general interaction functor/thing/stuff
+ctype_ dominance_interaction(ctype_ fb_self, ctype_ fb_other, ctype_ b) {
+    // soft max
+    float exp_other = expf(fb_other * b);
+    float exp_self  = expf(fb_self * b);
 
+    return exp_other / (exp_self + exp_other);
+}
 
 struct individual {
 private:
@@ -32,12 +39,7 @@ private:
   ctype_ previous_t;
   ctype_ next_t;
   ctype_ dominance;
-
-  bool is_food_handling;
-
   ctype_ threshold;
-
-  int ID;
 
   std::array<ctype_, static_cast<int>(task::max_task)> metabolic_rate;
   task current_task;
@@ -52,6 +54,43 @@ public:
   const individual& operator=(individual&&) = delete;
   individual(const individual&) = delete;
   const individual& operator=(const individual&) = delete;
+
+  void initialize(const params& p,
+                  rnd_t& rndgen) {
+    fat_body = p.init_fat_body;
+
+    metabolic_rate = {p.metabolic_cost_nurses,
+                      p.metabolic_cost_foragers,
+                      p.metabolic_cost_nurses};
+
+    dominance = static_cast<ctype_>(rndgen.uniform());
+    next_t = get_next_t_threshold(ctype_(0.0), rndgen);
+    if(next_t < 0.0) {
+      next_t = ctype_(0.0);
+    }
+    go_nurse(next_t);
+
+    update_tasks(ctype_(0.0));
+  }
+
+  void update(ctype_ t,
+              const params& p,
+              rnd_t& rndgen,
+              std::vector< individual* > nurses) {
+    set_previous_task();
+
+    if (current_task == task::forage) {
+      // update forager
+      update_forager(t, p, nurses, rndgen);
+    } else {
+      // nurse done nursing, or done handling food
+      update_nurse(t);
+    }
+
+    pick_task(t, rndgen, p);
+
+    update_tasks(t);
+  }
 
   void new_next_t(ctype_ nt) {
     next_t = nt;
@@ -85,13 +124,11 @@ public:
     previous_task = task::nurse;
     crop = 0.f;
     fat_body = 1.f;
-    is_food_handling = false;
     previous_t = 0.f;
     next_t = 0.f;
-    ID = 0;
     dominance = 0.f;
     threshold = 5.f;
-    metabolic_rate = {0.0, 0.0, 0.0}; // bogus values
+    metabolic_rate = {1.0, 1.0, 1.0}; // bogus values
   }
 
   void update_fatbody(ctype_ t) {
@@ -99,22 +136,8 @@ public:
     assert(dt >= 0);
     if (dt < 0) return;
     previous_t = t;
-  //  assert(current_task < metabolic_rate.size());
     fat_body -= dt * metabolic_rate[ static_cast<int>(current_task) ];
     if (fat_body < 0) fat_body = 0.f; // should not happen!
-  }
-
-  void set_params(const params& p,
-                  int id,
-                  rnd_t& rndgen) {
-    fat_body = p.init_fat_body;
-
-    metabolic_rate = {p.metabolic_cost_nurses,
-                      p.metabolic_cost_foragers,
-                      p.metabolic_cost_nurses};
-
-    ID = id;
-    dominance = static_cast<ctype_>(rndgen.normal(p.mean_dominance, p.sd_dominance));
   }
 
   void process_crop_forager(ctype_ fraction, ctype_ max_fat_body) {
@@ -166,15 +189,13 @@ public:
 
     current_task = task::food_handling;
     new_next_t(t + handling_time);
-    is_food_handling = true;
 
     return food;
   }
 
   void decide_new_task(ctype_ t,
-                      rnd_t& rndgen,
-                      ctype_ foraging_time) {
-    is_food_handling = false;
+                       rnd_t& rndgen,
+                       ctype_ foraging_time) {
     ctype_ new_t = get_next_t_threshold(t, rndgen);
 
     // if new_t is in the future: go nursing
@@ -187,7 +208,6 @@ public:
      }
   }
 
-
   void update_tasks(ctype_ t) {
     assert(t >= previous_t);
     previous_t = t;
@@ -198,69 +218,51 @@ public:
     data.push_back( data_storage(t, focal_task, fat_body));
   }
 
-  double calc_freq_switches(ctype_ min_t, ctype_ max_t) const {
-    if (data.size() <= 1) {
-      return 0.0;
+  void pick_task(ctype_ t,
+                 rnd_t& rndgen,
+                 const params& p) {
+    if (get_previous_task() == task::forage) {
+      // individual has returned from foraging
+      // now has to decide if he goes foraging again.
+      // the moment he goes foraging is picked with new_t:
+      decide_new_task(t,
+                      rndgen,
+                      p.foraging_time);
     }
+    if (get_previous_task() == task::nurse ||
+        get_previous_task() == task::food_handling) {
 
-    size_t cnt = 0;
-    size_t checked_time_points = 0;
-    for (size_t i = 1; i < data.size(); ++i) {
-
-      ctype_ t1 = data[i - 1].t_;
-      ctype_ t2 = data[i].t_;
-      if (t1 >= min_t && t2 <= max_t) {
-        checked_time_points++;
-        auto task1 = data[i].current_task_;
-        auto task2 = data[i - 1].current_task_;
-
-        if (task1 != task2) {
-          cnt++;
-        }
+      if (fat_body - threshold < ctype_(1e-2) ) {
+        // individual is here because he has reached his threshold,
+        // and goes foraging
+        go_forage(t, p.foraging_time);
+     } else {
+        decide_new_task(t,
+                        rndgen,
+                        p.foraging_time);
       }
     }
-
-    return cnt * 1.0 / checked_time_points;;
   }
 
-  size_t count_p(ctype_ min_t, ctype_ max_t,
-                 size_t& num_switches) const {
-    if (data.size() <= 1) {
-      num_switches += 1;
-      return 0;
-    }
+  void update_forager(ctype_ t,
+                      const params& p,
+                      std::vector< individual* > nurses,
+                      rnd_t& rndgen) {
+    update_fatbody(t);
 
-    size_t cnt = 0;
-    for (const auto& i : data) {
-      ctype_ t = i.t_;
-      if (t >= min_t && t <= max_t) {
-        if (i.current_task_ == task::nurse) cnt++;
-        num_switches++;
-      }
-    }
-    return cnt;
+    set_crop(p.resource_amount);
+    process_crop_forager(p.proportion_fat_body_forager,
+                                           p.max_fat_body);
+
+    share_resources(t, nurses, p, rndgen);
+    // the remainder in the crop is digested entirely.
+    process_crop_forager(ctype_(1.0), p.max_fat_body);
+    return;
   }
 
-  std::vector<ctype_> calculate_task_frequency(ctype_ min_t, ctype_ max_t) const {
-    std::vector<ctype_> task_freq(2, 0.0);
-
-    for (size_t i = 0; i < data.size(); ++i) {
-
-      ctype_ start_t = data[i].t_;
-      ctype_ end_t = max_t;
-      if (i + 1 < data.size()) {
-        end_t = data[i + 1].t_;
-      }
-
-      if (start_t >= min_t && end_t <= max_t &&
-          start_t <= max_t && end_t >= min_t) {
-        ctype_ dt = end_t - start_t;
-        int index = static_cast<int>(data[i].current_task_);
-        assert(dt >= 0.f);
-        task_freq[ index ] += dt;
-      }
-    }
-    return task_freq;
+  void update_nurse(ctype_ t) {
+    update_fatbody(t);
+    return;
   }
 
 
@@ -271,21 +273,74 @@ public:
   ctype_ get_next_t() const {return next_t;}
   ctype_ get_threshold() const {return threshold;}
   task get_task() const {return current_task;}
-  int get_id() const {return ID;}
   task get_previous_task() const {return previous_task;}
   const std::vector< data_storage >& get_data() const {return data;}
 
   void set_fat_body(ctype_ fb) {fat_body = fb;}
-  void set_crop(ctype_ c) {
-    crop = c;
-  }
+  void set_crop(ctype_ c) { crop = c;}
   void set_previous_t(ctype_ t) {previous_t = t;}
   void set_current_task(task new_task) {current_task = new_task;}
-  void set_is_food_handling(bool new_val) {is_food_handling = new_val;}
 
-  bool operator==(int other_id) {
-    if (ID == other_id) return true;
-    return false;
+  void share_resources(ctype_ t,
+                       std::vector< individual* > nurses,
+                       const params& p,
+                       rnd_t& rndgen) {
+    if (nurses.empty()) return;
+
+    ctype_ brood_resources = ctype_(0);
+
+    if (p.model_type > 0 || p.forager_sharing_at_default > 0.f) {
+      // in model 0, there is NO sharing
+      size_t num_interactions = std::min( static_cast<size_t>(p.max_number_interactions),
+                                          static_cast<size_t>(nurses.size()));
+
+      for (size_t i = 0; i < num_interactions; ++i) {
+        if (nurses.size() > 1) {
+          size_t j = i + rndgen.random_number(static_cast<int>(nurses.size() - i));
+          if (i != j) {
+            std::swap(nurses[i], nurses[j]);
+          }
+        }
+
+        ctype_ share_amount = p.forager_sharing_at_default;
+
+        switch(p.model_type) {
+          case 1: {
+              share_amount = ctype_(1.0) / num_interactions;
+            break;
+          }
+          case 2: {
+            share_amount = dominance_interaction(get_dominance(),
+                                                 nurses[i]->get_dominance(),
+                                                 p.soft_max);
+            break;
+          }
+          case 3: {
+              share_amount = dominance_interaction(get_fat_body(),
+                                                   nurses[i]->get_fat_body(),
+                                                   p.soft_max);
+            break;
+          }
+          default: {
+            share_amount = 0.f;
+          }
+        }
+
+        ctype_ to_share = share_amount * crop;
+
+        ctype_ food_remaining = nurses[i]->handle_food(to_share,
+                                                       p.max_crop_size,
+                                                       t,
+                                                       p.food_handling_time);
+
+        nurses[i]->process_crop_nurse(p.proportion_fat_body_nurse,
+                                      p.max_fat_body,
+                                      brood_resources);
+
+        reduce_crop(to_share - food_remaining);
+        nurses[i]->set_current_task(task::food_handling);
+      }
+    }
   }
 };
 
