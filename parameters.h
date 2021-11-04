@@ -60,6 +60,8 @@ struct params {
   ctype_ window_size = 100.f; // used for sliding window recording of DoL stats. Only used when data_interval = 0.
   ctype_ window_step_size =  1.f;
 
+  ctype_ soft_max = 1.0;
+
   std::string temp_params_to_record;
   std::vector < std::string > param_names_to_record;
   std::vector < ctype_ > params_to_record;
@@ -97,6 +99,7 @@ struct params {
     burnin                        = from_config.getValueOfKey<ctype_>("burnin");
     window_size                   = from_config.getValueOfKey<ctype_>("window_size");
     window_step_size              = from_config.getValueOfKey<ctype_>("window_step_size");
+    soft_max                      = from_config.getValueOfKey<ctype_>("soft_max");
   }
 
   std::vector< std::string > split(std::string s) {

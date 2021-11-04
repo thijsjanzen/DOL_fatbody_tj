@@ -52,10 +52,10 @@ TEST_CASE("TEST simulation") {
   REQUIRE(test_sim.nurses.size() == parameters.colony_size - 2);
   REQUIRE(test_sim.nurses[10] == 98); // swapped
 
-  float dom = test_sim.dominance_interaction(1.f, 2.f);
-  REQUIRE(dom < 1.f);
-  dom = test_sim.dominance_interaction(1.f, 1.f);
-  REQUIRE(dom == 0.5f); // (1 / (1 + exp(0)) = 1/2
+  float dom = test_sim.dominance_interaction(1.f, 2.f, 0.f);
+  REQUIRE(dom < 1.f); // 1 / (1 + 1) < 1
+  dom = test_sim.dominance_interaction(1.f, 1.f, 0.f);
+  REQUIRE(dom == 0.5f); // (1 / (1 + 1) = 1/2
 
   // update nurse
   test_sim.colony[0].set_fat_body(1.f);

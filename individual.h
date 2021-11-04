@@ -20,7 +20,6 @@ struct data_storage {
   const ctype_ fb_;
   const task current_task_;
 
-
   data_storage(ctype_ t, task ct, ctype_ fb) : t_(t), fb_(fb), current_task_(ct)  {}
 };
 
