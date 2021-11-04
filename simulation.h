@@ -54,6 +54,23 @@ struct Simulation {
     nurses.clear();
 
     auto focal_individual = colony.begin();
+
+    for (auto i = colony.begin(); i != colony.end(); ++i) {
+      if (i->get_next_t() < focal_individual->get_next_t()) {
+         focal_individual = i;
+      }
+    }
+
+    if (focal_individual->get_task() == task::forage) {
+        for (auto i = colony.begin(); i != colony.end(); ++i) {
+          if (i->get_task() == task::nurse) {
+            nurses.push_back(&(*i));
+          }
+        }
+    }
+    ctype_ new_t = focal_individual->get_next_t();
+
+   /*
     ctype_ new_t = std::numeric_limits<ctype_>::max();
 
     for (auto i = colony.begin(); i != colony.end(); ++i) {
@@ -65,7 +82,7 @@ struct Simulation {
         new_t = i->get_next_t();
         focal_individual = i;
       }
-    }
+    }*/
 
     assert(new_t >= t);
     t = new_t;
