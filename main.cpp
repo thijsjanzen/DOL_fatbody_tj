@@ -37,7 +37,7 @@ int main(int argc, char* argv[]) {
         std::unique_ptr<Simulation> sim = create_simulation(sim_par_in);
 
         auto clock_start = std::chrono::system_clock::now();
-        sim->run_simulation();
+        sim->run();
 
 
         if (sim_par_in.data_interval == 0) {

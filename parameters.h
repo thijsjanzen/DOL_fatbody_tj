@@ -43,8 +43,6 @@ struct params {
   ctype_ max_crop_size = 5.0f; // maximal resources that can be carried in crop
   ctype_ proportion_fat_body_forager = 0.2f; // proportion of resources allocated to the fatbody by foragers
   ctype_ proportion_fat_body_nurse   = 0.2f;  // proportion of resources allocated to the fatbody by nurses
-  ctype_ mean_dominance = 5.0f;
-  ctype_ sd_dominance = 2.0f;
   ctype_ mean_threshold = 5.0f;
   ctype_ sd_threshold = 1.7f;
   ctype_ food_handling_time = 0.5f;
@@ -84,8 +82,6 @@ struct params {
     max_crop_size                 = from_config.getValueOfKey<ctype_>("max_crop_size");
     proportion_fat_body_forager   = from_config.getValueOfKey<ctype_>("proportion_fat_body_forager");
     proportion_fat_body_nurse     = from_config.getValueOfKey<ctype_>("proportion_fat_body_nurse");
-    mean_dominance                = from_config.getValueOfKey<ctype_>("mean_dominance");
-    sd_dominance                  = from_config.getValueOfKey<ctype_>("sd_dominance");
     mean_threshold                = from_config.getValueOfKey<ctype_>("mean_threshold");
     sd_threshold                  = from_config.getValueOfKey<ctype_>("sd_threshold");
     food_handling_time            = from_config.getValueOfKey<ctype_>("food_handling_time");
@@ -138,8 +134,6 @@ struct params {
     if (s == "max_crop_size")               return max_crop_size;
     if (s == "proportion_fat_body_forager") return proportion_fat_body_forager;
     if (s == "proportion_fat_body_nurse")   return proportion_fat_body_nurse;
-    if (s == "mean_dominance")              return mean_dominance;
-    if (s == "sd_dominance")                return sd_dominance;
     if (s == "mean_threshold")              return mean_threshold;
     if (s == "sd_threshold")                return sd_threshold;
     if (s == "food_handling_time")          return food_handling_time;

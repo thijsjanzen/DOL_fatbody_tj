@@ -23,15 +23,6 @@ struct data_storage {
   data_storage(ctype_ t, task ct, ctype_ fb) : t_(t), fb_(fb), current_task_(ct)  {}
 };
 
-// TODO: make general interaction functor/thing/stuff
-ctype_ dominance_interaction(ctype_ fb_self, ctype_ fb_other, ctype_ b) {
-    // soft max
-    float exp_other = expf(fb_other * b);
-    float exp_self  = expf(fb_self * b);
-
-    return exp_other / (exp_self + exp_other);
-}
-
 struct individual {
 private:
   ctype_ fat_body;
@@ -71,56 +62,10 @@ public:
     if(next_t < 0.0) {
       next_t = ctype_(0.0);
     }
-    go_nurse(next_t);
+    start_task(next_t, task::nurse);
 
-    update_tasks(ctype_(0.0));
+    update_data(ctype_(0.0));
     share_interaction = share_func;
-  }
-
-  void update(ctype_ t,
-              const params& p,
-              rnd_t& rndgen,
-              std::vector< individual* > nurses) {
-    set_previous_task();
-
-    if (current_task == task::forage) {
-      // update forager
-      update_forager(t, p, nurses, rndgen);
-    } else {
-      // nurse done nursing, or done handling food
-      update_nurse(t);
-    }
-
-    pick_task(t, rndgen, p);
-
-    update_tasks(t);
-  }
-
-  void new_next_t(ctype_ nt) {
-    next_t = nt;
-  }
-
-  ctype_ get_next_t_threshold(ctype_ t, rnd_t& rndgen) {
-    // this function is only used by nurses
-    threshold = static_cast<ctype_>(rndgen.threshold_normal());
-
-    ctype_ dt = metabolic_rate[ static_cast<int>(task::nurse) ] == 0.f ? 1e20f : (fat_body - threshold) / metabolic_rate[ static_cast<int>(task::nurse) ];
-
-    return(t + dt);
-  }
-
-  void go_forage(ctype_ t, ctype_ forage_time) {
-    current_task = task::forage;
-    new_next_t(t + forage_time);
-  }
-
-  void go_nurse(ctype_ new_t) {
-    current_task = task::nurse;
-    new_next_t(new_t);
-  }
-
-  void set_previous_task() {
-    previous_task = current_task;
   }
 
   individual() {
@@ -133,6 +78,43 @@ public:
     dominance = 0.f;
     threshold = 5.f;
     metabolic_rate = {1.0, 1.0, 1.0}; // bogus values
+  }
+
+  void update(ctype_ t,
+              const params& p,
+              rnd_t& rndgen,
+              std::vector< individual* > nurses) {
+
+    set_previous_task(); 
+
+    if (previous_task == task::forage) {
+      // update forager
+      update_forager(t, p, nurses, rndgen);
+    } else {
+      // nurse done nursing, or done handling food
+      update_nurse(t);
+    }
+
+    pick_new_task(t, rndgen, p);
+
+    update_data(t);
+  }
+
+  ctype_ get_next_t_threshold(ctype_ t, rnd_t& rndgen) {
+    // this function is only used by nurses
+    threshold = static_cast<ctype_>(rndgen.threshold_normal());
+    ctype_ dt = metabolic_rate[ static_cast<int>(task::nurse) ] == 0.f ? 1e20f : (fat_body - threshold) / metabolic_rate[ static_cast<int>(task::nurse) ];
+
+    return(t + dt);
+  }
+
+  void start_task(ctype_ new_t, task new_task) {
+    current_task = new_task;
+    next_t = new_t;
+  }
+
+  void set_previous_task() {
+    previous_task = current_task;
   }
 
   void update_fatbody(ctype_ t) {
@@ -152,9 +134,9 @@ public:
     if (fat_body > max_fat_body) fat_body = max_fat_body;
   }
 
-  void process_crop_nurse(ctype_ fraction,
-                          ctype_ max_fat_body,
-                          ctype_& brood_resources) {
+  ctype_ process_crop_nurse(ctype_ fraction,
+                            ctype_ max_fat_body,
+                            ctype_ brood_resources) {
     ctype_ processed = crop * fraction;
     if (fat_body + processed < max_fat_body) {
       fat_body += processed;
@@ -169,6 +151,7 @@ public:
       brood_resources += crop;
       crop = 0.f;
     }
+    return brood_resources;
   }
 
   void reduce_crop(ctype_ amount) {
@@ -192,7 +175,7 @@ public:
     }
 
     current_task = task::food_handling;
-    new_next_t(t + handling_time);
+    next_t = t + handling_time;
 
     return food;
   }
@@ -202,17 +185,17 @@ public:
                        ctype_ foraging_time) {
     ctype_ new_t = get_next_t_threshold(t, rndgen);
 
-    // if new_t is in the future: go nursing
+    // if new_t is in the future: go nurse
     // otherwise, go foraging
      if (new_t <= t) {
-     // individual goes foraging
-       go_forage(t, foraging_time);
+     // individual goes foraging immediately
+       start_task(t + foraging_time, task::forage);
      } else {
-       go_nurse(new_t);
+       start_task(new_t, task::nurse);
      }
   }
 
-  void update_tasks(ctype_ t) {
+  void update_data(ctype_ t) {
     assert(t >= previous_t);
     previous_t = t;
 
@@ -222,9 +205,9 @@ public:
     data.push_back( data_storage(t, focal_task, fat_body));
   }
 
-  void pick_task(ctype_ t,
-                 rnd_t& rndgen,
-                 const params& p) {
+  void pick_new_task(ctype_ t,
+                     rnd_t& rndgen,
+                     const params& p) {
     if (get_previous_task() == task::forage) {
       // individual has returned from foraging
       // now has to decide if he goes foraging again.
@@ -232,14 +215,11 @@ public:
       decide_new_task(t,
                       rndgen,
                       p.foraging_time);
-    }
-    if (get_previous_task() == task::nurse ||
-        get_previous_task() == task::food_handling) {
-
+    } else { // nursing or food handling
       if (fat_body - threshold < ctype_(1e-2) ) {
         // individual is here because he has reached his threshold,
         // and goes foraging
-        go_forage(t, p.foraging_time);
+        start_task(t + p.foraging_time, task::forage);
      } else {
         decide_new_task(t,
                         rndgen,
@@ -305,9 +285,7 @@ public:
         }
       }
 
-      ctype_ share_amount = p.forager_sharing_at_default;
-
-      share_amount = share_interaction(this,
+      ctype_ share_amount = share_interaction(this,
                                        nurses[i],
                                        p.soft_max,
                                        num_interactions);
@@ -319,9 +297,9 @@ public:
                                                      t,
                                                      p.food_handling_time);
 
-      nurses[i]->process_crop_nurse(p.proportion_fat_body_nurse,
-                                    p.max_fat_body,
-                                    brood_resources);
+      brood_resources = nurses[i]->process_crop_nurse(p.proportion_fat_body_nurse,
+                                                      p.max_fat_body,
+                                                      brood_resources);
 
       reduce_crop(to_share - food_remaining);
       nurses[i]->set_current_task(task::food_handling);
