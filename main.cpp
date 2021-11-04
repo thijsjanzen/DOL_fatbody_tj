@@ -34,17 +34,17 @@ int main(int argc, char* argv[]) {
                               sim_par_in.data_interval);
 
     for (size_t num_repl = 0; num_repl < sim_par_in.num_replicates; ++num_repl) {
-        Simulation sim(sim_par_in);
+        std::unique_ptr<Simulation> sim = create_simulation(sim_par_in);
 
         auto clock_start = std::chrono::system_clock::now();
-        sim.run_simulation();
+        sim->run_simulation();
 
 
         if (sim_par_in.data_interval == 0) {
-          output::write_ants_to_file(sim.colony,
+          output::write_ants_to_file(sim->colony,
                                      sim_par_in.output_file_name, num_repl);
           
-          output::write_dol_sliding_window(sim.colony,
+          output::write_dol_sliding_window(sim->colony,
                                            sim_par_in.window_size,
                                            sim_par_in.window_step_size,
                                            static_cast<float>(sim_par_in.simulation_time),
@@ -52,7 +52,7 @@ int main(int argc, char* argv[]) {
                                            num_repl);
         }
 
-        output::write_dol_to_file(sim.colony,
+        output::write_dol_to_file(sim->colony,
                                   sim_par_in.params_to_record,
                                   sim_par_in.dol_file_name,
                                   num_repl,

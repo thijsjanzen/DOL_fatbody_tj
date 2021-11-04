@@ -46,6 +46,8 @@ private:
   task previous_task;
   std::vector< data_storage > data;
 
+  ctype_ (*share_interaction)(individual*, individual*, ctype_, size_t);
+
 public:
 
   // delete the copy and move operators:
@@ -56,7 +58,8 @@ public:
   const individual& operator=(const individual&) = delete;
 
   void initialize(const params& p,
-                  rnd_t& rndgen) {
+                  rnd_t& rndgen,
+                  ctype_ (*share_func)(individual*, individual*, ctype_, size_t)) {
     fat_body = p.init_fat_body;
 
     metabolic_rate = {p.metabolic_cost_nurses,
@@ -71,6 +74,7 @@ public:
     go_nurse(next_t);
 
     update_tasks(ctype_(0.0));
+    share_interaction = share_func;
   }
 
   void update(ctype_ t,
@@ -289,60 +293,77 @@ public:
 
     ctype_ brood_resources = ctype_(0);
 
-    if (p.model_type > 0 || p.forager_sharing_at_default > 0.f) {
       // in model 0, there is NO sharing
-      size_t num_interactions = std::min( static_cast<size_t>(p.max_number_interactions),
-                                          static_cast<size_t>(nurses.size()));
+    size_t num_interactions = std::min( static_cast<size_t>(p.max_number_interactions),
+                                        static_cast<size_t>(nurses.size()));
 
-      for (size_t i = 0; i < num_interactions; ++i) {
-        if (nurses.size() > 1) {
-          size_t j = i + rndgen.random_number(static_cast<int>(nurses.size() - i));
-          if (i != j) {
-            std::swap(nurses[i], nurses[j]);
-          }
+    for (size_t i = 0; i < num_interactions; ++i) {
+      if (nurses.size() > 1) {
+        size_t j = i + rndgen.random_number(static_cast<int>(nurses.size() - i));
+        if (i != j) {
+          std::swap(nurses[i], nurses[j]);
         }
-
-        ctype_ share_amount = p.forager_sharing_at_default;
-
-        switch(p.model_type) {
-          case 1: {
-              share_amount = ctype_(1.0) / num_interactions;
-            break;
-          }
-          case 2: {
-            share_amount = dominance_interaction(get_dominance(),
-                                                 nurses[i]->get_dominance(),
-                                                 p.soft_max);
-            break;
-          }
-          case 3: {
-              share_amount = dominance_interaction(get_fat_body(),
-                                                   nurses[i]->get_fat_body(),
-                                                   p.soft_max);
-            break;
-          }
-          default: {
-            share_amount = 0.f;
-          }
-        }
-
-        ctype_ to_share = share_amount * crop;
-
-        ctype_ food_remaining = nurses[i]->handle_food(to_share,
-                                                       p.max_crop_size,
-                                                       t,
-                                                       p.food_handling_time);
-
-        nurses[i]->process_crop_nurse(p.proportion_fat_body_nurse,
-                                      p.max_fat_body,
-                                      brood_resources);
-
-        reduce_crop(to_share - food_remaining);
-        nurses[i]->set_current_task(task::food_handling);
       }
+
+      ctype_ share_amount = p.forager_sharing_at_default;
+
+      share_amount = share_interaction(this,
+                                       nurses[i],
+                                       p.soft_max,
+                                       num_interactions);
+
+      ctype_ to_share = share_amount * crop;
+
+      ctype_ food_remaining = nurses[i]->handle_food(to_share,
+                                                     p.max_crop_size,
+                                                     t,
+                                                     p.food_handling_time);
+
+      nurses[i]->process_crop_nurse(p.proportion_fat_body_nurse,
+                                    p.max_fat_body,
+                                    brood_resources);
+
+      reduce_crop(to_share - food_remaining);
+      nurses[i]->set_current_task(task::food_handling);
     }
   }
 };
+
+ctype_ no_sharing(individual* pivot,
+                  individual* other,
+                  ctype_ soft_max,
+                  size_t num_interactions)  {
+    return ctype_(0.0);
+}
+
+ctype_ fair_sharing(individual* pivot,
+                    individual* other,
+                    ctype_ soft_max,
+                    size_t num_interactions)  {
+    return ctype_(1) / num_interactions;
+}
+
+ctype_ dominance_sharing(individual* pivot,
+                         individual* other,
+                         ctype_ soft_max,
+                         size_t num_interactions)  {
+
+    ctype_ exp_other = expf(other->get_dominance() * soft_max);
+    ctype_ exp_self  = expf(pivot->get_dominance() * soft_max);
+
+    return exp_other / (exp_self + exp_other);
+}
+
+ctype_ fatbody_sharing (individual* pivot,
+                        individual* other,
+                        ctype_ soft_max,
+                        size_t num_interactions)  {
+
+    ctype_ exp_other = expf(other->get_fat_body() * soft_max);
+    ctype_ exp_self  = expf(pivot->get_fat_body() * soft_max);
+
+    return exp_other / (exp_self + exp_other);
+}
 
 
 #endif /* individual_h */

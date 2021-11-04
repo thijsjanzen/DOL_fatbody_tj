@@ -13,7 +13,7 @@
 
 namespace stats {
 
-  double calc_freq_switches(const individual& indiv, 
+  double calc_freq_switches(const individual& indiv,
                             ctype_ min_t, ctype_ max_t) {
     if (indiv.get_data().size() <= 1) {
       return 0.0;

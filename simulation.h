@@ -24,6 +24,7 @@
 
 struct Simulation {
   std::vector< individual > colony;
+  std::vector< individual* > nurses;
 
   params p;
   rnd_t rndgen;
@@ -33,9 +34,10 @@ struct Simulation {
 
   ctype_ brood_resources;
 
-  Simulation(const params& par) : 
-            p(par), 
-            rndgen(p.mean_threshold, p.sd_threshold) {
+  Simulation(const params& par,
+             ctype_ (*share_func)(individual*, individual*, ctype_, size_t)) :
+             p(par),
+             rndgen(p.mean_threshold, p.sd_threshold) {
   
     colony = std::vector< individual >(p.colony_size);
 
@@ -43,13 +45,13 @@ struct Simulation {
     previous_time_recording = -1;
     brood_resources = 0.0;
     for (auto& i : colony) {
-      i.initialize(p, rndgen);
+      i.initialize(p, rndgen, share_func);
     }
   }
 
   void update_colony() {
 
-    std::vector< individual* > nurses;
+    nurses.clear();
     auto focal_individual = colony.begin();
     ctype_ new_t = std::numeric_limits<ctype_>::max();
 
@@ -125,6 +127,28 @@ struct Simulation {
    }
 };
 
+std::unique_ptr<Simulation> create_simulation(const params& p) {
+  switch(p.model_type) {
+    case 0: {
+      return std::make_unique<Simulation>(p, no_sharing);
+      break;
+    }
+    case 1: {
+      return std::make_unique<Simulation>(p, fair_sharing);
+      break;
+    }
+    case 2: {
+      return std::make_unique<Simulation>(p, dominance_sharing);
+      break;
+    }
+    case 3: {
+      return std::make_unique<Simulation>(p, fatbody_sharing);
+      break;
+    }
+  }
+  // default
+  return std::make_unique<Simulation>(p, no_sharing);
+}
 
 
 #endif /* simulation_h */
