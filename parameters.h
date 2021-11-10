@@ -16,6 +16,8 @@
 
 using ctype_ = float;
 
+enum share_model {no, fair, dominance, fat_body, max_model};
+
 struct params {
 
   params() {};
@@ -32,7 +34,7 @@ struct params {
   int data_interval = 1; // data is written simulationTime / dataInterval times
   size_t colony_size = 100; // number of individuals per colony
 
-  size_t model_type = 3; // 0 = no sharing, 1 = random sharing, 2 = dominance sharing, 3 = changing dominance
+  share_model model_type = share_model::fat_body; // 0 = no sharing, 1 = random sharing, 2 = dominance sharing, 3 = changing dominance
 
   size_t max_number_interactions = 3; // max number of interactions with nurses at foraging return
 
@@ -73,7 +75,7 @@ struct params {
     simulation_time               = from_config.getValueOfKey<size_t>("simulation_time");
     data_interval                 = from_config.getValueOfKey<int>("data_interval");
     colony_size                   = from_config.getValueOfKey<size_t>("colony_size");
-    model_type                    = from_config.getValueOfKey<size_t>("model_type");
+    model_type                    = static_cast<share_model>(from_config.getValueOfKey<size_t>("model_type"));
     max_number_interactions       = from_config.getValueOfKey<size_t>("max_number_interactions");
     metabolic_cost_nurses         = from_config.getValueOfKey<ctype_>("metabolic_cost_nurses");
     metabolic_cost_foragers       = from_config.getValueOfKey<ctype_>("metabolic_cost_foragers");

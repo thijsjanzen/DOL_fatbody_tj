@@ -35,7 +35,7 @@ struct Simulation {
   ctype_ brood_resources;
 
   Simulation(const params& par,
-             ctype_ (*share_func)(individual*, individual*, ctype_, size_t)) :
+             std::vector<ctype_> (*share_func_grouped)(individual*, std::vector<individual*>, ctype_, size_t)) :
              p(par),
              rndgen(p.mean_threshold, p.sd_threshold) {
   
@@ -45,7 +45,7 @@ struct Simulation {
     previous_time_recording = -1;
     brood_resources = 0.0;
     for (auto& i : colony) {
-      i.initialize(p, rndgen, share_func);
+      i.initialize(p, rndgen, share_func_grouped);
     }
   }
 
@@ -102,26 +102,31 @@ struct Simulation {
 };
 
 std::unique_ptr<Simulation> create_simulation(const params& p) {
+
   switch(p.model_type) {
-    case 0: {
-      return std::make_unique<Simulation>(p, no_sharing);
+    case share_model::no : {
+      return std::make_unique<Simulation>(p, no_sharing_grouped);
       break;
     }
-    case 1: {
-      return std::make_unique<Simulation>(p, fair_sharing);
+    case share_model::fair: {
+      return std::make_unique<Simulation>(p, fair_sharing_grouped);
       break;
     }
-    case 2: {
-      return std::make_unique<Simulation>(p, dominance_sharing);
+    case share_model::dominance: {
+      return std::make_unique<Simulation>(p, dominance_sharing_grouped);
       break;
     }
-    case 3: {
-      return std::make_unique<Simulation>(p, fatbody_sharing);
+    case share_model::fat_body: {
+      return std::make_unique<Simulation>(p, fatbody_sharing_grouped);
+      break;
+    }
+    case share_model::max_model: {
+      throw std::exception();
       break;
     }
   }
   // default
-  return std::make_unique<Simulation>(p, no_sharing);
+  return std::make_unique<Simulation>(p, no_sharing_grouped);
 }
 
 
