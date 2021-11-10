@@ -52,6 +52,8 @@ public:
   void initialize(const params& p,
                   rnd_t& rndgen,
                   std::vector<ctype_> (*share_func_grouped)(individual*, std::vector<individual*>, ctype_, size_t)) {
+    share_interaction_grouped = share_func_grouped;
+
     fat_body = p.init_fat_body;
 
     metabolic_rate = {p.metabolic_cost_nurses,
@@ -63,10 +65,10 @@ public:
     if(next_t < 0.0) {
       next_t = ctype_(0.0);
     }
+
     start_task(next_t, task::nurse);
 
     update_data(ctype_(0.0));
-    share_interaction_grouped = share_func_grouped;
   }
 
   individual() {
@@ -127,32 +129,27 @@ public:
     if (fat_body < 0) fat_body = 0.f; // should not happen!
   }
 
-  void process_crop_forager(ctype_ fraction, ctype_ max_fat_body) {
-    ctype_ processed = crop * fraction;
+  void process_crop_forager(ctype_ max_fat_body) {
+    ctype_ processed = crop;
 
     fat_body += processed;
     crop -= processed;
     if (fat_body > max_fat_body) fat_body = max_fat_body;
   }
 
-  ctype_ process_crop_nurse(ctype_ fraction,
-                            ctype_ max_fat_body,
-                            ctype_ brood_resources) {
-    ctype_ processed = crop * fraction;
+  void process_crop_nurse(ctype_ max_fat_body) {
+    ctype_ processed = crop;
+
+    // code below can be shorter, but now shows better the decision tree.
     if (fat_body + processed < max_fat_body) {
       fat_body += processed;
-      crop -= processed;
-      brood_resources += crop;
       crop = 0.f;
     } else {
       processed = max_fat_body - fat_body;
-
       fat_body += processed;
-      crop -= processed;
-      brood_resources += crop;
       crop = 0.f;
     }
-    return brood_resources;
+    return;
   }
 
   void reduce_crop(ctype_ amount) {
@@ -161,19 +158,12 @@ public:
   }
 
   ctype_ handle_food(ctype_ food, // amount shared by the forager to the nurse
-                     ctype_ max_crop_size,
                      ctype_ t,
                      ctype_ handling_time) {
 
     // code below can be shorter, but now shows better the decision tree.
-    if (crop + food < max_crop_size) {
-      crop += food;
-      food -= food;
-    } else {
-      ctype_ food_received = max_crop_size - crop;
-      crop += food_received;
-      food -= food_received;
-    }
+    crop += food;
+    food -= food;
 
     current_task = task::food_handling;
     next_t = t + handling_time;
@@ -235,14 +225,9 @@ public:
                       rnd_t& rndgen) {
     update_fatbody(t);
 
-    set_crop(p.resource_amount);
-    process_crop_forager(p.proportion_fat_body_forager,
-                                           p.max_fat_body);
-
-   // share_resources(t, nurses, p, rndgen);
     share_resources_grouped(t, nurses, p, rndgen);
     // the remainder in the crop is digested entirely.
-    process_crop_forager(ctype_(1.0), p.max_fat_body);
+    process_crop_forager(p.max_fat_body);
     return;
   }
 
@@ -275,10 +260,8 @@ public:
 
     if (nurses.empty()) return;
 
-    ctype_ brood_resources = ctype_(0);
-
     size_t num_interactions = std::min( static_cast<size_t>(p.max_number_interactions),
-                                           static_cast<size_t>(nurses.size()));
+                                         static_cast<size_t>(nurses.size()));
 
     for (size_t i = 0; i < num_interactions; ++i) {
       if (nurses.size() > 1) {
@@ -288,29 +271,26 @@ public:
         }
       }
       // now, we have selected num_interactions nurses randomly
+    }
 
-      std::vector< ctype_ > share_amount = share_interaction_grouped(this,
-                                                                     nurses,
-                                                                     p.soft_max,
-                                                                     num_interactions);
+    std::vector< ctype_ > share_amount = share_interaction_grouped(this,
+                                                                   nurses,
+                                                                   p.soft_max,
+                                                                   num_interactions);
 
-
-      for (size_t i = 0; i < num_interactions; ++i) {
+    for (size_t i = 0; i < num_interactions; ++i) {
 
         ctype_ to_share = share_amount[i] * crop;
 
         ctype_ food_remaining = nurses[i]->handle_food(to_share,
-                                                       p.max_crop_size,
                                                        t,
                                                        p.food_handling_time);
 
-        brood_resources = nurses[i]->process_crop_nurse(p.proportion_fat_body_nurse,
-                                                        p.max_fat_body,
-                                                        brood_resources);
+        nurses[i]->process_crop_nurse(p.max_fat_body);
 
-        reduce_crop(to_share - food_remaining);
+        this->reduce_crop(to_share - food_remaining);
+      
         nurses[i]->set_current_task(task::food_handling);
-      }
     }
   }
 };
@@ -340,7 +320,7 @@ std::vector<ctype_> fair_sharing_grouped(individual* pivot,
                             std::vector<individual*> other,
                             ctype_ soft_max,
                             size_t num_interactions)  {
-  return std::vector<ctype_>(num_interactions, ctype_(1) / num_interactions);
+  return std::vector<ctype_>(num_interactions, ctype_(1) / ( 1 + num_interactions)); // 1 + for forager
 }
 
 ctype_ dominance_sharing(individual* pivot,
@@ -360,9 +340,12 @@ std::vector<ctype_> dominance_sharing_grouped(individual* pivot,
                                               size_t num_interactions)  {
 
   std::vector<ctype_> share(num_interactions);
+
   ctype_ sum = expf(pivot->get_dominance() * soft_max);
+
   for (size_t i = 0; i < num_interactions; ++i) {
     share[i] = expf( other[i]->get_dominance() * soft_max);
+
     sum += share[i];
   }
   sum = ctype_(1) / sum;

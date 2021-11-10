@@ -39,14 +39,12 @@ struct Simulation {
              p(par),
              rndgen(p.mean_threshold, p.sd_threshold) {
   
-    colony = std::vector< individual >(p.colony_size);
-
-    t = 0.0;
-    previous_time_recording = -1;
-    brood_resources = 0.0;
-    for (auto& i : colony) {
-      i.initialize(p, rndgen, share_func_grouped);
-    }
+     colony = std::vector< individual >(p.colony_size);
+     for (auto& i : colony) {
+       i.initialize(p, rndgen, share_func_grouped);
+     }
+     t = 0.0;
+     previous_time_recording = -1;
   }
 
   void update_colony() {
@@ -69,20 +67,6 @@ struct Simulation {
         }
     }
     ctype_ new_t = focal_individual->get_next_t();
-
-   /*
-    ctype_ new_t = std::numeric_limits<ctype_>::max();
-
-    for (auto i = colony.begin(); i != colony.end(); ++i) {
-      if (i->get_task() == task::nurse) {
-        nurses.push_back(&(*i));
-      }
-      
-      if (i->get_next_t() < new_t) {
-        new_t = i->get_next_t();
-        focal_individual = i;
-      }
-    }*/
 
     assert(new_t >= t);
     t = new_t;

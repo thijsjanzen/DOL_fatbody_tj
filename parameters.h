@@ -42,15 +42,10 @@ struct params {
   ctype_ metabolic_cost_foragers = 0.5f;
   ctype_ max_fat_body = 12.0f; // new individuals have a fat body that has this size at maximum
   ctype_ init_fat_body = 10.0f;
-  ctype_ max_crop_size = 5.0f; // maximal resources that can be carried in crop
-  ctype_ proportion_fat_body_forager = 0.2f; // proportion of resources allocated to the fatbody by foragers
-  ctype_ proportion_fat_body_nurse   = 0.2f;  // proportion of resources allocated to the fatbody by nurses
   ctype_ mean_threshold = 5.0f;
   ctype_ sd_threshold = 1.7f;
   ctype_ food_handling_time = 0.5f;
 
-  ctype_ forager_sharing_at_default = 0.f;
- 
   ctype_ resource_amount = 1.0f;
   ctype_ foraging_time = 5.0f;
 
@@ -81,9 +76,6 @@ struct params {
     metabolic_cost_foragers       = from_config.getValueOfKey<ctype_>("metabolic_cost_foragers");
     max_fat_body                  = from_config.getValueOfKey<ctype_>("max_fat_body");
     init_fat_body                 = from_config.getValueOfKey<ctype_>("init_fat_body");
-    max_crop_size                 = from_config.getValueOfKey<ctype_>("max_crop_size");
-    proportion_fat_body_forager   = from_config.getValueOfKey<ctype_>("proportion_fat_body_forager");
-    proportion_fat_body_nurse     = from_config.getValueOfKey<ctype_>("proportion_fat_body_nurse");
     mean_threshold                = from_config.getValueOfKey<ctype_>("mean_threshold");
     sd_threshold                  = from_config.getValueOfKey<ctype_>("sd_threshold");
     food_handling_time            = from_config.getValueOfKey<ctype_>("food_handling_time");
@@ -93,7 +85,6 @@ struct params {
     temp_params_to_record         = from_config.getValueOfKey<std::string>("params_to_record");
     param_names_to_record         = split(temp_params_to_record);
     params_to_record              = create_params_to_record(param_names_to_record);
-    forager_sharing_at_default    = from_config.getValueOfKey<ctype_>("forager_sharing_at_default");
     burnin                        = from_config.getValueOfKey<ctype_>("burnin");
     window_size                   = from_config.getValueOfKey<ctype_>("window_size");
     window_step_size              = from_config.getValueOfKey<ctype_>("window_step_size");
@@ -133,15 +124,11 @@ struct params {
     if (s == "metabolic_cost_foragers")     return metabolic_cost_foragers;
     if (s == "max_fat_body")                return max_fat_body;
     if (s == "init_fat_body")               return init_fat_body;
-    if (s == "max_crop_size")               return max_crop_size;
-    if (s == "proportion_fat_body_forager") return proportion_fat_body_forager;
-    if (s == "proportion_fat_body_nurse")   return proportion_fat_body_nurse;
     if (s == "mean_threshold")              return mean_threshold;
     if (s == "sd_threshold")                return sd_threshold;
     if (s == "food_handling_time")          return food_handling_time;
     if (s == "resource_amount")             return resource_amount;
     if (s == "foraging_time")               return foraging_time;
-    if (s == "forager_sharing_at_default")  return forager_sharing_at_default;
     if (s == "burnin")                      return burnin;
     if (s == "num_replicates")              return static_cast<ctype_>(num_replicates);
 
