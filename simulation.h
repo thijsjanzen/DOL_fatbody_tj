@@ -66,10 +66,7 @@ struct Simulation {
           }
         }
     }
-    ctype_ new_t = focal_individual->get_next_t();
-
-    assert(new_t >= t);
-    t = new_t;
+    t = focal_individual->get_next_t();
 
     focal_individual->update(t, p, rndgen, nurses);
   }
