@@ -12,6 +12,9 @@
 #include "parameters.h"
 #include "rand_t.h"
 #include <cassert>
+#include <limits>
+
+
           // 0       1          2           3
 enum class task {nurse, forage, food_handling, max_task};
 
@@ -353,18 +356,30 @@ ctype_ fatbody_sharing (individual* pivot,
     return exp_other / (exp_self + exp_other);
 }
 
+inline ctype_ get_exp(ctype_ val) {
+  static ctype_ max_val = log(std::numeric_limits<ctype_>::max());
+  if (val > max_val) {
+    return std::numeric_limits<ctype_>::max();
+  }
+
+  return std::exp(val);
+}
+
+
+
 std::vector<ctype_> fatbody_sharing_grouped(individual* pivot,
                                               std::vector<individual*> other,
                                               ctype_ soft_max,
                                               size_t num_interactions)  {
-
   std::vector<ctype_> share(num_interactions);
-  ctype_ sum = std::exp(pivot->get_fat_body() * soft_max);
+  ctype_ sum = get_exp(pivot->get_fat_body() * soft_max);
   for (size_t i = 0; i < num_interactions; ++i) {
-    share[i] = std::exp( other[i]->get_fat_body() * soft_max);
+    share[i] = get_exp(other[i]->get_fat_body() * soft_max);
     sum += share[i];
   }
+
   sum = ctype_(1) / sum;
+
   for (auto& i : share) {
     i *= sum;
   }
