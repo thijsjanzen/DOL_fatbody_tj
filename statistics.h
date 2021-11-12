@@ -249,11 +249,16 @@ namespace output {
   void write_ants_to_file(const std::vector< individual>& colony,
                           std::string file_name,
                           size_t num_repl) {
-    std::ofstream out(file_name.c_str());
 
+    if (num_repl == 0) {
+       std::ofstream out(file_name.c_str());
+      out << "replicate" << "\t" << "ID" << "\t" << "time" << "\t" << "task" << "\t" << "fat_body" << "\n";
+      out.close();
+    }
+
+    std::ofstream out(file_name.c_str(), std::ios::app);
     std::cout << "writing output to: " << file_name << "\n";
 
-    out << "replicate" << "\t" << "ID" << "\t" << "time" << "\t" << "task" << "\t" << "fat_body" << "\n";
 
     int cnt = 0;
     for (const auto& i : colony) {
