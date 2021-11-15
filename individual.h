@@ -34,6 +34,7 @@ private:
   ctype_ next_t;
   ctype_ dominance;
   ctype_ threshold;
+  ctype_ max_fat_body;
 
   std::array<ctype_, static_cast<int>(task::max_task)> metabolic_rate;
   task current_task;
@@ -58,6 +59,7 @@ public:
     share_interaction_grouped = share_func_grouped;
 
     fat_body = p.init_fat_body;
+    max_fat_body = p.max_fat_body;
 
     metabolic_rate = {p.metabolic_cost_nurses,
                       p.metabolic_cost_foragers,
@@ -132,7 +134,7 @@ public:
     if (fat_body < 0) fat_body = 0.f; // should not happen!
   }
 
-  void process_crop(ctype_ max_fat_body) {
+  void process_crop() {
     fat_body += crop;
     crop = 0.f;
     if (fat_body > max_fat_body) fat_body = max_fat_body;
@@ -214,7 +216,7 @@ public:
     set_crop(p.resource_amount);
     share_resources_grouped(t, nurses, p, rndgen);
     // the remainder in the crop is digested entirely.
-    process_crop(p.max_fat_body);
+    process_crop();
     return;
   }
 
@@ -225,6 +227,7 @@ public:
 
 
   ctype_ get_fat_body() const {return fat_body;}
+  ctype_ get_relative_fat_body() const {return fat_body * 1.0 / max_fat_body;}
   ctype_ get_dominance() const {return dominance;}
   ctype_ get_crop() const {return crop;}
   ctype_ get_previous_t() const {return previous_t;}
@@ -274,7 +277,7 @@ public:
                                                        t,
                                                        p.food_handling_time);
 
-        nurses[i]->process_crop(p.max_fat_body);
+        nurses[i]->process_crop();
 
         this->reduce_crop(to_share - food_remaining);
     }
@@ -350,8 +353,8 @@ ctype_ fatbody_sharing (individual* pivot,
                         ctype_ soft_max,
                         size_t num_interactions)  {
 
-    ctype_ exp_other = std::exp(other->get_fat_body() * soft_max);
-    ctype_ exp_self  = std::exp(pivot->get_fat_body() * soft_max);
+    ctype_ exp_other = std::exp(other->get_relative_fat_body() * soft_max);
+    ctype_ exp_self  = std::exp(pivot->get_relative_fat_body() * soft_max);
 
     return exp_other / (exp_self + exp_other);
 }
@@ -368,13 +371,13 @@ inline ctype_ get_exp(ctype_ val) {
 
 
 std::vector<ctype_> fatbody_sharing_grouped(individual* pivot,
-                                              std::vector<individual*> other,
-                                              ctype_ soft_max,
-                                              size_t num_interactions)  {
+                                            std::vector<individual*> other,
+                                            ctype_ soft_max,
+                                            size_t num_interactions)  {
   std::vector<ctype_> share(num_interactions);
-  ctype_ sum = get_exp(pivot->get_fat_body() * soft_max);
+  ctype_ sum = get_exp(pivot->get_relative_fat_body()  * soft_max);
   for (size_t i = 0; i < num_interactions; ++i) {
-    share[i] = get_exp(other[i]->get_fat_body() * soft_max);
+    share[i] = get_exp(other[i]->get_relative_fat_body() * soft_max);
     sum += share[i];
   }
 
