@@ -252,7 +252,7 @@ namespace output {
 
     if (num_repl == 0) {
        std::ofstream out(file_name.c_str());
-      out << "replicate" << "\t" << "ID" << "\t" << "time" << "\t" << "task" << "\t" << "fat_body" << "\n";
+      out << "replicate" << "\t" << "ID" << "\t" << "time" << "\t" << "task" << "\t" << "fat_body" << "\t" << "dominance" << "\n";
       out.close();
     }
 
