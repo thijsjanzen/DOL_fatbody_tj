@@ -17,7 +17,7 @@
 int main(int argc, char* argv[]) {
   try {
 
-    std::string file_name = (argc > 2) ? argv[1] : "test.ini";
+    std::string file_name = (argc > 2) ? argv[1] : "config.ini";
 
     std::cout << "reading from config file: " << file_name << "\n";
     std::ifstream test_file(file_name.c_str());

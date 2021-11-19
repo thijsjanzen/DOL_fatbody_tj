@@ -149,7 +149,6 @@ public:
                      ctype_ t,
                      ctype_ handling_time) {
 
-    // code below can be shorter, but now shows better the decision tree.
     crop += food;
     food -= food;
 
