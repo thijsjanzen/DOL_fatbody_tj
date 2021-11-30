@@ -32,8 +32,6 @@ struct Simulation {
   ctype_ t;
   int previous_time_recording;
 
-  ctype_ brood_resources;
-
   Simulation(const params& par,
              std::vector<ctype_> (*share_func_grouped)(individual*, std::vector<individual*>, ctype_, size_t)) :
              p(par),
