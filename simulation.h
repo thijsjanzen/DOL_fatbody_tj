@@ -77,6 +77,7 @@ struct Simulation {
     }
     // end roll call, for data purposes:
     for (auto& i : colony) {
+      i.update_fatbody(t);
       i.update_data(t);
     }
   }
