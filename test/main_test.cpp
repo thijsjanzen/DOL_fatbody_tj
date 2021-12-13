@@ -9,32 +9,83 @@
 #include <fstream>
 #include <string>
 
+float get_share_amount(std::unique_ptr<Simulation>& sim,
+                       const params& p,
+                       rnd_t& rndgen) {
+  sim->colony[0].set_fat_body(0.0f);
+  sim->colony[0].set_dominance(0.1f);
+
+  sim->colony[1].set_fat_body(1.f);
+  sim->colony[1].set_dominance(0.2f);
+
+  sim->colony[0].set_current_task(task::forage);
+  sim->colony[0].set_current_task(task::nurse);
+
+  std::vector< individual * > nurses;
+  for (int i = 1; i < sim->colony.size(); ++i) {
+    nurses.push_back(&sim->colony[i]);
+  }
+
+  sim->colony[0].set_crop(p.resource_amount);
+
+  sim->colony[0].share_resources_grouped(0.f,
+                                         nurses,
+                                         p,
+                                         rndgen);
+
+  return sim->colony[0].get_crop();
+}
+
 TEST_CASE("TEST initialize simulation") {
 
   params parameters;
+  parameters.colony_size = 2;
   rnd_t rndgen(parameters.mean_threshold, parameters.sd_threshold);
 
   parameters.model_type = share_model::no;
 
   std::unique_ptr<Simulation> test_sim1 = create_simulation(parameters);
 
+  float result = get_share_amount(test_sim1,
+                                  parameters,
+                                  rndgen);
+  CHECK(result == parameters.resource_amount);
+
   parameters.model_type = share_model::fair;
   std::unique_ptr<Simulation> test_sim2 = create_simulation(parameters);
 
+  float result2 = get_share_amount(test_sim2,
+                                  parameters,
+                                  rndgen);
+  CHECK(result2 == parameters.resource_amount * 0.5f);
+
+
   parameters.model_type = share_model::dominance;
+  parameters.soft_max = 100;
+
   std::unique_ptr<Simulation> test_sim3 = create_simulation(parameters);
+
+  float result3 = get_share_amount(test_sim3,
+                                   parameters,
+                                   rndgen);
+  CHECK(result3 < parameters.resource_amount * 1e-3f);
+
 
   parameters.model_type = share_model::fat_body;
   std::unique_ptr<Simulation> test_sim4 = create_simulation(parameters);
 
+  float result4 = get_share_amount(test_sim4,
+                                   parameters,
+                                   rndgen);
+  CHECK(result4 < parameters.resource_amount * 1e-3f);
+
+
+
+
+  // this is superficial testing, but better than nothing
   REQUIRE(test_sim1->colony.size() == test_sim2->colony.size());
   REQUIRE(test_sim2->colony.size() == test_sim3->colony.size());
   REQUIRE(test_sim3->colony.size() == test_sim4->colony.size());
-
-  
-
-
-
 }
 
 
