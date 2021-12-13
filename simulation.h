@@ -65,6 +65,7 @@ struct Simulation {
         }
     }
     t = focal_individual->get_next_t();
+    if (t > p.simulation_time) return;
 
     focal_individual->update(t, p, rndgen, nurses);
   }
@@ -73,6 +74,7 @@ struct Simulation {
     while(t < p.simulation_time) {
       update_colony();
     }
+    t = p.simulation_time;
     // end roll call, for data purposes:
     for (auto& i : colony) {
       i.update_fatbody(t);
