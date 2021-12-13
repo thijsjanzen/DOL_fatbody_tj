@@ -240,6 +240,7 @@ public:
   void set_crop(ctype_ c) { crop = c;}
   void set_previous_t(ctype_ t) {previous_t = t;}
   void set_current_task(task new_task) {current_task = new_task;}
+  void set_dominance(ctype_ d) {dominance = d;} // for testing
 
 
   void share_resources_grouped(ctype_ t,
@@ -283,11 +284,13 @@ public:
   }
 };
 
-ctype_ no_sharing(individual* pivot,
-                  individual* other,
-                  ctype_ soft_max,
-                  size_t num_interactions)  {
-    return ctype_(0.0);
+inline ctype_ get_exp(ctype_ val) {
+  static ctype_ max_val = log(std::numeric_limits<ctype_>::max());
+  if (val > max_val) {
+    return std::numeric_limits<ctype_>::max();
+  }
+
+  return std::exp(val);
 }
 
 std::vector<ctype_> no_sharing_grouped(individual* pivot,
@@ -297,29 +300,11 @@ std::vector<ctype_> no_sharing_grouped(individual* pivot,
   return std::vector<ctype_>(num_interactions, ctype_(0.0));
 }
 
-ctype_ fair_sharing(individual* pivot,
-                    individual* other,
-                    ctype_ soft_max,
-                    size_t num_interactions)  {
-    return ctype_(1) / num_interactions;
-}
-
 std::vector<ctype_> fair_sharing_grouped(individual* pivot,
                             std::vector<individual*> other,
                             ctype_ soft_max,
                             size_t num_interactions)  {
   return std::vector<ctype_>(num_interactions, ctype_(1) / ( 1 + num_interactions)); // 1 + for forager
-}
-
-ctype_ dominance_sharing(individual* pivot,
-                         individual* other,
-                         ctype_ soft_max,
-                         size_t num_interactions)  {
-
-    ctype_ exp_other = std::exp(other->get_dominance() * soft_max);
-    ctype_ exp_self  = std::exp(pivot->get_dominance() * soft_max);
-
-    return exp_other / (exp_self + exp_other);
 }
 
 std::vector<ctype_> dominance_sharing_grouped(individual* pivot,
@@ -343,31 +328,6 @@ std::vector<ctype_> dominance_sharing_grouped(individual* pivot,
 
   return share;
 }
-
-
-
-
-ctype_ fatbody_sharing (individual* pivot,
-                        individual* other,
-                        ctype_ soft_max,
-                        size_t num_interactions)  {
-
-    ctype_ exp_other = std::exp(other->get_relative_fat_body() * soft_max);
-    ctype_ exp_self  = std::exp(pivot->get_relative_fat_body() * soft_max);
-
-    return exp_other / (exp_self + exp_other);
-}
-
-inline ctype_ get_exp(ctype_ val) {
-  static ctype_ max_val = log(std::numeric_limits<ctype_>::max());
-  if (val > max_val) {
-    return std::numeric_limits<ctype_>::max();
-  }
-
-  return std::exp(val);
-}
-
-
 
 std::vector<ctype_> fatbody_sharing_grouped(individual* pivot,
                                             std::vector<individual*> other,

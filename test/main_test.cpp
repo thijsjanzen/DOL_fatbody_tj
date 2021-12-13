@@ -171,3 +171,72 @@ TEST_CASE("TEST individual") {
   CHECK(temp_data.current_task_  == test_indiv.get_task());
   CHECK(temp_data.t_ == 1.f);
 }
+
+TEST_CASE("TEST sharing") {
+  params parameters;
+  rnd_t rndgen(parameters.mean_threshold, parameters.sd_threshold);
+
+  std::vector<individual> indivs(2);
+  // no sharing
+  for(auto& i : indivs) {
+    i.initialize(parameters, rndgen,
+                 no_sharing_grouped); // sharing type doesn't matter here.
+  }
+
+  std::vector< individual*> nurses;
+  for (int i = 1; i < 2; ++i) {
+    nurses.push_back( &indivs[i] );
+  }
+
+  std::vector< ctype_ > share_amount =
+              no_sharing_grouped(&indivs[0],
+                                        nurses,
+                                        parameters.soft_max,
+                                        1);
+  REQUIRE(share_amount[0] == 0.f);
+
+  share_amount =
+              fair_sharing_grouped(&indivs[0],
+                                        nurses,
+                                        parameters.soft_max,
+                                        1);
+  REQUIRE(share_amount[0] == 0.5f);
+
+  share_amount =
+                  dominance_sharing_grouped(&indivs[0],
+                                            nurses,
+                                            0, // 0 defaults to fair sharing
+                                            1);
+  REQUIRE(share_amount[0] == 0.5f);
+
+  indivs[0].set_dominance(0.5f);
+  indivs[1].set_dominance(0.5f);
+
+  share_amount =
+  dominance_sharing_grouped(&indivs[0],
+                            nurses,
+                            1,
+                            1);
+
+  REQUIRE(share_amount[0] == 0.5f);
+
+  indivs[0].set_dominance(0.1f);
+  indivs[1].set_dominance(0.4f);
+
+  share_amount =
+  dominance_sharing_grouped(&indivs[0],
+                            nurses,
+                            100, // s
+                            1);
+  
+  REQUIRE(share_amount[0] == 1.0f);
+
+  share_amount =
+  dominance_sharing_grouped(&indivs[0],
+                            nurses,
+                            10, // s
+                            1);
+
+  REQUIRE(share_amount[0] > 0.4 / 0.5);
+}
+
