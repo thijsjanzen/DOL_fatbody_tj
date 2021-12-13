@@ -103,14 +103,15 @@ TEST_CASE("TEST freq") {
   test_indiv.initialize(parameters, rndgen,
                         fair_sharing_grouped);
 
-  test_indiv.set_current_task(task::nurse);
+  test_indiv.set_current_task(task::forage);
   test_indiv.update_data(1.f);
   test_indiv.set_previous_task();
-  test_indiv.set_current_task(task::forage);
+  test_indiv.set_current_task(task::nurse);
   test_indiv.update_data(2.f);
 
   double freq_s = stats::calc_freq_switches(test_indiv, 0.f, 2.f);
-  CHECK(freq_s == 1.f); // switches all the way!
+  // 0 = nurse, 1 = forage, 2 = nurse. 2/2 switches.
+  CHECK(freq_s == 1.0f); // switches all the way!
 }
 
 
@@ -118,28 +119,22 @@ TEST_CASE("TEST individual") {
 
   params parameters;
   rnd_t rndgen(parameters.mean_threshold, parameters.sd_threshold);
-  int id = 0;
 
   individual test_indiv;
 
   test_indiv.initialize(parameters, rndgen, fair_sharing_grouped);
 
   test_indiv.set_fat_body(0.f);
-  test_indiv.set_crop(5.f);
+  test_indiv.set_crop(1.f);
   test_indiv.process_crop();
 
-  CHECK(test_indiv.get_crop() == 2.5f);
-  CHECK(test_indiv.get_fat_body() == 1.f);
+  CHECK(test_indiv.get_crop() == 0.f); // crop is fully processed
+  CHECK(test_indiv.get_fat_body() == 1.f); // all crop to fb
 
   // check on update fatbody
   //fat body before  = 1.0f
   test_indiv.update_fatbody(1.f);
   CHECK(test_indiv.get_fat_body() < 1.f);
-
-  test_indiv.reduce_crop(0.5f);
-  CHECK(test_indiv.get_crop() == 2.f);
-
-  test_indiv.reduce_crop(2.f); // crop is now empty!
 
   float new_food = test_indiv.handle_food(1.f, // food
                                           2,    // t
@@ -152,8 +147,9 @@ TEST_CASE("TEST individual") {
   new_food = test_indiv.handle_food(5.f, // food
                                     2,    // t
                                     0.5f); // handling_time
-  CHECK(test_indiv.get_crop() == 2.f);
-  CHECK(new_food == 4.f); // 5 - 2 * 0.5 = 4
+
+  CHECK(test_indiv.get_crop() == 6.f);
+  CHECK(new_food == 0.f); // 5 - 2 * 0.5 = 4
 
 
   test_indiv.set_fat_body(100.f);
