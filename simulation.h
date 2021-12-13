@@ -106,9 +106,13 @@ std::unique_ptr<Simulation> create_simulation(const params& p) {
       throw std::exception();
       break;
     }
+
+    default: {
+      throw std::exception();
+        break;
+    }
+
   }
-  // default
-  return std::make_unique<Simulation>(p, no_sharing_grouped);
 }
 
 

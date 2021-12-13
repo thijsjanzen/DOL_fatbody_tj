@@ -93,15 +93,19 @@ TEST_CASE("TEST parameters") {
 
   // we test here the ability to extract parameters to record
   params parameters;
-  auto s = "resource_amount,foraging_time";
+  auto s = "resource_amount,foraging_time,burnin,num_replicates";
   auto vec = parameters.split(s);
-  REQUIRE(vec.size() == 2);
+  REQUIRE(vec.size() == 4);
   CHECK(vec[0] == "resource_amount");
   CHECK(vec[1] == "foraging_time");
+  CHECK(vec[2] == "burnin");
+  CHECK(vec[3] == "num_replicates");
 
   auto vals = parameters.create_params_to_record(vec);
   CHECK(vals[0] == parameters.resource_amount);
   CHECK(vals[1] == parameters.foraging_time);
+  CHECK(vals[2] == parameters.burnin);
+  CHECK(vals[3] == parameters.num_replicates);
 }
 
 TEST_CASE("TEST simulation") {
