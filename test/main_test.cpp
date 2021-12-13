@@ -174,6 +174,8 @@ TEST_CASE("TEST individual") {
 
 TEST_CASE("TEST sharing") {
   params parameters;
+  parameters.max_fat_body = 1.f; // for simplicity later on.
+  
   rnd_t rndgen(parameters.mean_threshold, parameters.sd_threshold);
 
   std::vector<individual> indivs(2);
@@ -233,6 +235,45 @@ TEST_CASE("TEST sharing") {
 
   share_amount =
   dominance_sharing_grouped(&indivs[0],
+                            nurses,
+                            10, // s
+                            1);
+
+  REQUIRE(share_amount[0] > 0.4 / 0.5);
+
+  // fb tests
+
+  share_amount =
+                  fatbody_sharing_grouped(&indivs[0],
+                                            nurses,
+                                            0, // 0 defaults to fair sharing
+                                            1);
+  REQUIRE(share_amount[0] == 0.5f);
+
+  indivs[0].set_fat_body(0.5f);
+  indivs[1].set_fat_body(0.5f);
+
+
+  share_amount =
+  fatbody_sharing_grouped(&indivs[0],
+                            nurses,
+                            1,
+                            1);
+
+  REQUIRE(share_amount[0] == 0.5f);
+
+  indivs[0].set_fat_body(0.1f);
+  indivs[1].set_fat_body(0.4f);
+
+  share_amount = fatbody_sharing_grouped(&indivs[0],
+                                          nurses,
+                                          100, // s
+                                          1);
+
+  REQUIRE(share_amount[0] == 1.0f);
+
+  share_amount =
+  fatbody_sharing_grouped(&indivs[0],
                             nurses,
                             10, // s
                             1);
