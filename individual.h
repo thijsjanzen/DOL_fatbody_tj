@@ -41,7 +41,6 @@ private:
   task previous_task;
   std::vector< data_storage > data;
 
-//  ctype_ (*share_interaction)(individual*, individual*, ctype_, size_t);
   std::vector<ctype_> (*share_interaction_grouped)(individual*, std::vector<individual*>, ctype_, size_t);
 
 public:

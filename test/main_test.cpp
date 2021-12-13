@@ -9,6 +9,34 @@
 #include <fstream>
 #include <string>
 
+TEST_CASE("TEST initialize simulation") {
+
+  params parameters;
+  rnd_t rndgen(parameters.mean_threshold, parameters.sd_threshold);
+
+  parameters.model_type = share_model::no;
+
+  std::unique_ptr<Simulation> test_sim1 = create_simulation(parameters);
+
+  parameters.model_type = share_model::fair;
+  std::unique_ptr<Simulation> test_sim2 = create_simulation(parameters);
+
+  parameters.model_type = share_model::dominance;
+  std::unique_ptr<Simulation> test_sim3 = create_simulation(parameters);
+
+  parameters.model_type = share_model::fat_body;
+  std::unique_ptr<Simulation> test_sim4 = create_simulation(parameters);
+
+  REQUIRE(test_sim1->colony.size() == test_sim2->colony.size());
+  REQUIRE(test_sim2->colony.size() == test_sim3->colony.size());
+  REQUIRE(test_sim3->colony.size() == test_sim4->colony.size());
+
+  
+
+
+
+}
+
 
 TEST_CASE("TEST parameters") {
 
@@ -175,7 +203,7 @@ TEST_CASE("TEST individual") {
 TEST_CASE("TEST sharing") {
   params parameters;
   parameters.max_fat_body = 1.f; // for simplicity later on.
-  
+
   rnd_t rndgen(parameters.mean_threshold, parameters.sd_threshold);
 
   std::vector<individual> indivs(2);
