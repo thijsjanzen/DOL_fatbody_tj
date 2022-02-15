@@ -15,7 +15,7 @@
 #include <limits>
 
 
-          // 0       1          2           3
+                 // 0       1          2           3
 enum class task {nurse, forage, food_handling, max_task};
 
 struct data_storage {
@@ -272,6 +272,8 @@ public:
 
         ctype_ to_share = share_amount[i] * total_crop;
 
+      if (to_share > 0.0) {
+
         ctype_ food_remaining = nurses[i]->handle_food(to_share,
                                                        t,
                                                        p.food_handling_time);
@@ -279,6 +281,7 @@ public:
         nurses[i]->process_crop();
 
         this->reduce_crop(to_share - food_remaining);
+      }
     }
   }
 };
